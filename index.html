@@ -20,7 +20,7 @@
     .btn-list-open { background: #00897b; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 11px; font-weight: bold; cursor: pointer; width: auto; height: 24px; }
     
     .info-group { margin-bottom: 4px; font-size: 13px; }
-    .info-row { display: flex; justify-content: space-between; gap: 8px; }
+    .info-row { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
     .info-row div { flex: 1; }
     
     .status-badge { display: inline-block; padding: 1px 4px; border-radius: 3px; font-size: 10px; margin-left: 3px; }
@@ -83,9 +83,12 @@
       <button class="btn-list-open" onclick="openModal('ritual')">リスト</button>
     </div>
     <div class="info-group">前回の時間場所：<span id="prev-ritual">--:-- (未登録)</span></div>
-    <div class="info-group info-row">
-      <div>次の時間：<span id="next-time-ritual">--:--</span><span id="badge-time-ritual" class="status-badge"></span></div>
-      <div>場所：<span id="next-loc-ritual">--</span><span id="badge-loc-ritual" class="status-badge"></span></div>
+    
+    <div id="ritual-next-container">
+      <div class="info-group info-row">
+        <div>次の時間：<span id="next-time-ritual">--:--</span><span id="badge-time-ritual" class="status-badge"></span></div>
+        <div>場所：<span id="next-loc-ritual">--</span><span id="badge-loc-ritual" class="status-badge"></span></div>
+      </div>
     </div>
     
     <div class="form-group">
@@ -377,30 +380,94 @@
       closeModal();
     }
 
+    // 同一時間/曜日のグループ化処理
+    function groupItemsByTime(list) {
+      const groups = [];
+      list.forEach(item => {
+        const key = `${item.nextDay}_${item.nextTime}`;
+        let group = groups.find(g => g.key === key);
+        if (group) {
+          if (!group.locations.includes(item.nextLoc)) {
+            group.locations.push(item.nextLoc);
+          }
+        } else {
+          groups.push({
+            key,
+            nextDay: item.nextDay,
+            nextTime: item.nextTime,
+            prevTime: item.prevTime,
+            prevLoc: item.prevLoc,
+            locations: [item.nextLoc],
+            type: item.type
+          });
+        }
+      });
+      return groups;
+    }
+
     // UI表示の更新
     function updateUI(category) {
       const list = store[category] || [];
-      const data = list[0] || defaultPayload;
 
-      document.getElementById(`prev-${category}`).innerText = `${data.prevTime || '--:--'} (${data.prevLoc || '未登録'})`;
-      
-      const dayDisplay = data.nextDay ? `(${data.nextDay}) ` : '';
-      document.getElementById(`next-time-${category}`).innerText = data.nextTime ? `${dayDisplay}${data.nextTime}` : '--:--';
-      document.getElementById(`next-loc-${category}`).innerText = data.nextLoc || '--';
+      if (category === 'ritual') {
+        const groups = groupItemsByTime(list);
+        const container = document.getElementById('ritual-next-container');
 
-      const timeBadge = document.getElementById(`badge-time-${category}`);
-      const locBadge = document.getElementById(`badge-loc-${category}`);
-      
-      if (data.nextTime) {
-        const label = data.type === 'confirmed' ? '確定' : '予想';
-        const className = data.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
-        timeBadge.innerText = label;
-        timeBadge.className = className;
-        locBadge.innerText = label;
-        locBadge.className = className;
+        if (groups.length === 0) {
+          document.getElementById('prev-ritual').innerText = '--:-- (未登録)';
+          container.innerHTML = `
+            <div class="info-group info-row">
+              <div>次の時間：<span>--:--</span></div>
+              <div>場所：<span>--</span></div>
+            </div>`;
+          return;
+        }
+
+        // 前回の表示（同一時間で場所をスラッシュ連結）
+        const top = groups[0];
+        let prevLocs = top.prevLoc ? top.prevLoc.split(' / ') : [];
+        let prevLocStr = prevLocs.join('/');
+        document.getElementById('prev-ritual').innerText = `${top.prevTime || '--:--'} (${prevLocStr || '未登録'})`;
+
+        // 直近最大2件の時間枠を表示
+        let html = '';
+        groups.slice(0, 2).forEach(g => {
+          const dayDisplay = g.nextDay ? `(${g.nextDay}) ` : '';
+          const locStr = g.locations.join('/');
+          const label = g.type === 'confirmed' ? '確定' : '予想';
+          const badgeClass = g.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+
+          html += `
+            <div class="info-group info-row">
+              <div>次の時間：<span>${dayDisplay}${g.nextTime}</span><span class="${badgeClass}">${label}</span></div>
+              <div>場所：<span>${locStr}</span><span class="${badgeClass}">${label}</span></div>
+            </div>`;
+        });
+        container.innerHTML = html;
+
       } else {
-        timeBadge.innerText = '';
-        locBadge.innerText = '';
+        // 白青FB・仙幻FB
+        const data = list[0] || defaultPayload;
+        document.getElementById(`prev-${category}`).innerText = `${data.prevTime || '--:--'} (${data.prevLoc || '未登録'})`;
+        
+        const dayDisplay = data.nextDay ? `(${data.nextDay}) ` : '';
+        document.getElementById(`next-time-${category}`).innerText = data.nextTime ? `${dayDisplay}${data.nextTime}` : '--:--';
+        document.getElementById(`next-loc-${category}`).innerText = data.nextLoc || '--';
+
+        const timeBadge = document.getElementById(`badge-time-${category}`);
+        const locBadge = document.getElementById(`badge-loc-${category}`);
+        
+        if (data.nextTime) {
+          const label = data.type === 'confirmed' ? '確定' : '予想';
+          const className = data.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+          timeBadge.innerText = label;
+          timeBadge.className = className;
+          locBadge.innerText = label;
+          locBadge.className = className;
+        } else {
+          timeBadge.innerText = '';
+          locBadge.innerText = '';
+        }
       }
     }
 
@@ -448,49 +515,52 @@
       document.getElementById('tw-clock').innerText = twTimeStr;
 
       const dayMap = { '日': 0, '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6 };
-      const categoryNames = { hakusei: '白青', sengen: '仙幻' };
+      const categoryNames = { ritual: '儀式', hakusei: '白青', sengen: '仙幻' };
 
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
-        const item = (store[cat] || [])[0];
-        if (!item || !item.nextTime || !item.nextDay) return;
+        const list = store[cat] || [];
+        
+        list.forEach(item => {
+          if (!item || !item.nextTime || !item.nextDay) return;
 
-        const targetTwDayNum = dayMap[item.nextDay];
-        const [twH, twM] = item.nextTime.split(':').map(Number);
+          const targetTwDayNum = dayMap[item.nextDay];
+          const [twH, twM] = item.nextTime.split(':').map(Number);
 
-        if (targetTwDayNum === twDate.getDay()) {
-          const targetJst = new Date(now.getFullYear(), now.getMonth(), now.getDate(), twH + 1, twM, 0);
-          const diffMin = Math.floor((targetJst - now) / 60000);
+          if (targetTwDayNum === twDate.getDay()) {
+            const targetJst = new Date(now.getFullYear(), now.getMonth(), now.getDate(), twH + 1, twM, 0);
+            const diffMin = Math.floor((targetJst - now) / 60000);
 
-          if (item.type === 'confirmed' && diffMin === 10) {
-            const key = `${cat}-10m-${item.nextDay}-${item.nextTime}`;
-            if (!alertedSet.has(key)) {
-              alertedSet.add(key);
-              let notifyMsg = cat === 'ritual' ? 
-                `${item.nextTime}：${item.nextLoc}で儀式始まります` : 
-                `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc}にフィールドボスがわきます`;
-              let speakMsg = cat === 'ritual' ? 
-                `${item.nextLoc}で儀式が始まります` : 
-                `${categoryNames[cat]}の${item.nextLoc}にフィールドボスが湧きます`;
-              notify('ブレソNeoタイマー', notifyMsg);
-              speak(speakMsg);
+            if (item.type === 'confirmed' && diffMin === 10) {
+              const key = `${cat}-10m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
+              if (!alertedSet.has(key)) {
+                alertedSet.add(key);
+                let notifyMsg = cat === 'ritual' ? 
+                  `${item.nextTime}：${item.nextLoc}で儀式始まります` : 
+                  `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc}にフィールドボスがわきます`;
+                let speakMsg = cat === 'ritual' ? 
+                  `${item.nextLoc}で儀式が始まります` : 
+                  `${categoryNames[cat]}の${item.nextLoc}にフィールドボスが湧きます`;
+                notify('ブレソNeoタイマー', notifyMsg);
+                speak(speakMsg);
+              }
+            }
+
+            if (item.type === 'estimated' && diffMin === 5) {
+              const key = `${cat}-5m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
+              if (!alertedSet.has(key)) {
+                alertedSet.add(key);
+                let notifyMsg = cat === 'ritual' ? 
+                  `${item.nextTime}：${item.nextLoc}で儀式始まる可能性があります` : 
+                  `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc}にフィールドボスが湧く可能性があります`;
+                let speakMsg = cat === 'ritual' ? 
+                  `${item.nextLoc}で儀式が始まる可能性があります` : 
+                  `${categoryNames[cat]}の${item.nextLoc}にフィールドボスが湧く可能性があります`;
+                notify('ブレソNeoタイマー', notifyMsg);
+                speak(speakMsg);
+              }
             }
           }
-
-          if (item.type === 'estimated' && diffMin === 5) {
-            const key = `${cat}-5m-${item.nextDay}-${item.nextTime}`;
-            if (!alertedSet.has(key)) {
-              alertedSet.add(key);
-              let notifyMsg = cat === 'ritual' ? 
-                `${item.nextTime}：${item.nextLoc}で儀式始まる可能性があります` : 
-                `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc}にフィールドボスが湧く可能性があります`;
-              let speakMsg = cat === 'ritual' ? 
-                `${item.nextLoc}で儀式が始まる可能性があります` : 
-                `${categoryNames[cat]}の${item.nextLoc}にフィールドボスが湧く可能性があります`;
-              notify('ブレソNeoタイマー', notifyMsg);
-              speak(speakMsg);
-            }
-          }
-        }
+        });
       });
 
       if (document.getElementById('wbNotice').checked) {
