@@ -37,9 +37,10 @@
     select, input[type="time"] { width: 100%; padding: 4px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; font-size: 12px; height: 28px; }
     
     .btn-row { display: flex; gap: 6px; margin-top: 6px; }
-    .btn-row button { margin: 0; flex: 1; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; height: 28px; }
+    .btn-row button { margin: 0; flex: 1; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; height: 28px; font-size: 12px; }
     .btn-reg { background: #0288d1; color: #fff; }
-    .btn-reset { background: #c62828 !important; color: #fff; margin-top: 8px; height: 32px; font-size: 13px; font-weight: bold; width: 100%; border-radius: 4px; border: none; cursor: pointer; }
+    .btn-cat-clear { background: #d32f2f; color: #fff; }
+    .btn-reset { background: #b71c1c !important; color: #fff; margin-top: 8px; height: 32px; font-size: 13px; font-weight: bold; width: 100%; border-radius: 4px; border: none; cursor: pointer; }
     
     .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; background: #222; padding: 6px; border-radius: 6px; }
     .checkbox-container input { width: auto; height: auto; margin: 0; }
@@ -134,6 +135,7 @@
       </div>
       <div class="btn-row">
         <button class="btn-reg" onclick="registerData('ritual')">登録</button>
+        <button class="btn-cat-clear" onclick="clearCategoryData('ritual')">儀式をクリア</button>
       </div>
     </div>
   </div>
@@ -186,6 +188,7 @@
       </div>
       <div class="btn-row">
         <button class="btn-reg" onclick="registerData('hakusei')">登録</button>
+        <button class="btn-cat-clear" onclick="clearCategoryData('hakusei')">白青FBをクリア</button>
       </div>
     </div>
   </div>
@@ -240,11 +243,12 @@
       </div>
       <div class="btn-row">
         <button class="btn-reg" onclick="registerData('sengen')">登録</button>
+        <button class="btn-cat-clear" onclick="clearCategoryData('sengen')">仙幻FBをクリア</button>
       </div>
     </div>
   </div>
 
-  <button class="btn-reset" onclick="resetAllData()">画面の登録データを一括クリア</button>
+  <button class="btn-reset" onclick="resetAllData()">すべての登録データを一括クリア</button>
 
   <!-- リスト表示用モーダル画面 -->
   <div id="modalOverlay" class="modal-overlay">
@@ -393,6 +397,20 @@
       localStorage.setItem(`list_${category}`, JSON.stringify(store[category]));
       updateUI(category);
       renderModalList(category);
+      syncToGitHub();
+    }
+
+    // カテゴリ単位の一括クリア機能
+    function clearCategoryData(category) {
+      const labels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+      if (!confirm(`「${labels[category]}」のデータを一括クリアしますか？`)) return;
+
+      store[category] = [];
+      localStorage.setItem(`list_${category}`, JSON.stringify([]));
+      updateUI(category);
+      if (currentModalCategory === category) {
+        renderModalList(category);
+      }
       syncToGitHub();
     }
 
