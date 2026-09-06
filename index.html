@@ -5,25 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ブレソNeoタイマー</title>
   <style>
-    body { font-family: sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 15px; max-width: 480px; margin: 0 auto; }
-    h1 { font-size: 20px; text-align: center; color: #00ffcc; margin-bottom: 5px; }
-    .clock-banner { text-align: center; font-size: 14px; color: #aaa; margin-bottom: 15px; background: #1a1a1a; padding: 6px; border-radius: 6px; border: 1px solid #333; }
-    .clock-banner span { color: #00ffcc; font-weight: bold; font-size: 16px; }
-    .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
-    .card-title { font-size: 16px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 8px; color: #ffeb3b; }
-    .info-group { margin-bottom: 6px; font-size: 14px; }
-    .status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+    body { font-family: sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 10px; max-width: 480px; margin: 0 auto; box-sizing: border-box; }
+    h1 { font-size: 18px; text-align: center; color: #00ffcc; margin: 0 0 5px 0; }
+    .clock-banner { text-align: center; font-size: 12px; color: #aaa; margin-bottom: 8px; background: #1a1a1a; padding: 4px; border-radius: 6px; border: 1px solid #333; }
+    .clock-banner span { color: #00ffcc; font-weight: bold; font-size: 14px; }
+    
+    .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+    .card-title { font-size: 15px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 3px; margin-bottom: 6px; color: #ffeb3b; }
+    
+    .info-group { margin-bottom: 4px; font-size: 13px; }
+    .info-row { display: flex; justify-content: space-between; gap: 8px; }
+    .info-row div { flex: 1; }
+    
+    .status-badge { display: inline-block; padding: 1px 4px; border-radius: 3px; font-size: 10px; margin-left: 3px; }
     .status-confirmed { background: #2e7d32; color: #fff; }
     .status-estimated { background: #f57f17; color: #fff; }
-    .form-group { background: #2a2a2a; padding: 8px; border-radius: 6px; margin-top: 8px; }
-    label { font-size: 12px; display: block; margin-bottom: 2px; }
-    select, input[type="time"], button { width: 100%; padding: 6px; margin-bottom: 6px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; }
-    button { background: #0288d1; font-weight: bold; cursor: pointer; border: none; margin-top: 4px; color: #fff; }
-    button:hover { opacity: 0.9; }
-    .btn-item-clear { background: #555 !important; margin-top: 2px; }
-    .btn-reset { background: #c62828 !important; margin-top: 10px; }
-    .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; background: #222; padding: 8px; border-radius: 6px; }
-    .checkbox-container input { width: auto; margin: 0; }
+    
+    .form-group { background: #2a2a2a; padding: 6px; border-radius: 6px; margin-top: 6px; }
+    .form-title { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #bbb; }
+    
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+    .field-unit { display: flex; flex-direction: column; }
+    
+    label { font-size: 10px; color: #aaa; margin-bottom: 1px; }
+    select, input[type="time"], button { width: 100%; padding: 4px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; font-size: 12px; height: 28px; }
+    
+    .btn-row { display: flex; gap: 6px; margin-top: 6px; }
+    .btn-row button { margin: 0; flex: 1; font-weight: bold; cursor: pointer; border: none; }
+    .btn-reg { background: #0288d1; }
+    .btn-item-clear { background: #555 !important; }
+    .btn-reset { background: #c62828 !important; margin-top: 6px; height: 32px; font-size: 13px; }
+    
+    .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; background: #222; padding: 6px; border-radius: 6px; }
+    .checkbox-container input { width: auto; height: auto; margin: 0; }
   </style>
 
   <!-- Firebase SDK -->
@@ -40,127 +54,168 @@
 
   <div class="checkbox-container">
     <input type="checkbox" id="wbNotice">
-    <label for="wbNotice" style="margin:0; font-size:14px;">WB通知 (平日 21:00 / 週末 15:00, 21:00 [台湾時間])</label>
+    <label for="wbNotice" style="margin:0; font-size:12px; color:#e0e0e0;">WB通知 (平日 21:00 / 週末 15:00, 21:00 [台湾時間])</label>
   </div>
 
   <!-- 儀式エリア -->
   <div class="card" id="card-ritual">
     <div class="card-title">儀式</div>
-    <div class="info-group">前回の時間・場所 (TW): <span id="prev-ritual">--:-- (未登録)</span></div>
-    <div class="info-group">次の出現時間 (TW): <span id="next-time-ritual">--:--</span><span id="badge-time-ritual" class="status-badge"></span></div>
-    <div class="info-group">次の出現場所: <span id="next-loc-ritual">--</span><span id="badge-loc-ritual" class="status-badge"></span></div>
+    <div class="info-group">前回の時間場所：<span id="prev-ritual">--:-- (未登録)</span></div>
+    <div class="info-group info-row">
+      <div>次の時間：<span id="next-time-ritual">--:--</span><span id="badge-time-ritual" class="status-badge"></span></div>
+      <div>場所：<span id="next-loc-ritual">--</span><span id="badge-loc-ritual" class="status-badge"></span></div>
+    </div>
     
     <div class="form-group">
-      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">儀式情報登録 (※台湾時間)</div>
-      <label>出現曜日</label>
-      <select id="input-day-ritual">
-        <option value="月">月曜日</option>
-        <option value="火">火曜日</option>
-        <option value="水">水曜日</option>
-        <option value="木">木曜日</option>
-        <option value="金">金曜日</option>
-        <option value="土">土曜日</option>
-        <option value="日">日曜日</option>
-      </select>
-      <label>出現時間</label>
-      <input type="time" id="input-time-ritual">
-      <label>出現場所</label>
-      <select id="input-loc-ritual">
-        <option value="孤独">孤独</option>
-        <option value="海岸">海岸</option>
-        <option value="鬼都">鬼都</option>
-        <option value="灰狼">灰狼</option>
-        <option value="土門">土門</option>
-        <option value="黒森">黒森</option>
-        <option value="悲鳴">悲鳴</option>
-        <option value="染坊">染坊</option>
-        <option value="雪原">雪原</option>
-      </select>
-      <label>情報種別</label>
-      <select id="input-type-ritual">
-        <option value="confirmed">確定データ</option>
-        <option value="estimated">予想データ</option>
-      </select>
-      <button onclick="registerData('ritual')">登録</button>
-      <button class="btn-item-clear" onclick="clearSingleData('ritual')">儀式データをクリア</button>
+      <div class="form-title">儀式情報登録 (※台湾時間)</div>
+      <div class="grid-2col">
+        <div class="field-unit">
+          <label>曜日</label>
+          <select id="input-day-ritual">
+            <option value="月">月曜日</option>
+            <option value="火">火曜日</option>
+            <option value="水">水曜日</option>
+            <option value="木">木曜日</option>
+            <option value="金">金曜日</option>
+            <option value="土">土曜日</option>
+            <option value="日">日曜日</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>時間</label>
+          <input type="time" id="input-time-ritual">
+        </div>
+        <div class="field-unit">
+          <label>場所</label>
+          <select id="input-loc-ritual">
+            <option value="孤独">孤独</option>
+            <option value="海岸">海岸</option>
+            <option value="鬼都">鬼都</option>
+            <option value="灰狼">灰狼</option>
+            <option value="土門">土門</option>
+            <option value="黒森">黒森</option>
+            <option value="悲鳴">悲鳴</option>
+            <option value="染坊">染坊</option>
+            <option value="雪原">雪原</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>種別</label>
+          <select id="input-type-ritual">
+            <option value="confirmed">確定データ</option>
+            <option value="estimated">予想データ</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-reg" onclick="registerData('ritual')">登録</button>
+        <button class="btn-item-clear" onclick="clearSingleData('ritual')">儀式データクリア</button>
+      </div>
     </div>
   </div>
 
   <!-- 白青FBエリア -->
   <div class="card" id="card-hakusei">
     <div class="card-title">白青FB</div>
-    <div class="info-group">前回の時間・場所 (TW): <span id="prev-hakusei">--:-- (未登録)</span></div>
-    <div class="info-group">次の出現時間 (TW): <span id="next-time-hakusei">--:--</span><span id="badge-time-hakusei" class="status-badge"></span></div>
-    <div class="info-group">次の出現場所: <span id="next-loc-hakusei">--</span><span id="badge-loc-hakusei" class="status-badge"></span></div>
+    <div class="info-group">前回の時間場所：<span id="prev-hakusei">--:-- (未登録)</span></div>
+    <div class="info-group info-row">
+      <div>次の時間：<span id="next-time-hakusei">--:--</span><span id="badge-time-hakusei" class="status-badge"></span></div>
+      <div>場所：<span id="next-loc-hakusei">--</span><span id="badge-loc-hakusei" class="status-badge"></span></div>
+    </div>
     
     <div class="form-group">
-      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">白青FB情報登録 (※台湾時間)</div>
-      <label>出現曜日</label>
-      <select id="input-day-hakusei">
-        <option value="月">月曜日</option>
-        <option value="火">火曜日</option>
-        <option value="水">水曜日</option>
-        <option value="木">木曜日</option>
-        <option value="金">金曜日</option>
-        <option value="土">土曜日</option>
-        <option value="日">日曜日</option>
-      </select>
-      <label>出現時間</label>
-      <input type="time" id="input-time-hakusei">
-      <label>出現場所</label>
-      <select id="input-loc-hakusei">
-        <option value="平原">平原</option>
-        <option value="樹林">樹林</option>
-      </select>
-      <label>情報種別</label>
-      <select id="input-type-hakusei">
-        <option value="confirmed">確定データ</option>
-        <option value="estimated">予想データ</option>
-      </select>
-      <button onclick="registerData('hakusei')">登録</button>
-      <button class="btn-item-clear" onclick="clearSingleData('hakusei')">白青FBデータをクリア</button>
+      <div class="form-title">白青FB情報登録 (※台湾時間)</div>
+      <div class="grid-2col">
+        <div class="field-unit">
+          <label>曜日</label>
+          <select id="input-day-hakusei">
+            <option value="月">月曜日</option>
+            <option value="火">火曜日</option>
+            <option value="水">水曜日</option>
+            <option value="木">木曜日</option>
+            <option value="金">金曜日</option>
+            <option value="土">土曜日</option>
+            <option value="日">日曜日</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>時間</label>
+          <input type="time" id="input-time-hakusei">
+        </div>
+        <div class="field-unit">
+          <label>場所</label>
+          <select id="input-loc-hakusei">
+            <option value="平原">平原</option>
+            <option value="樹林">樹林</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>種別</label>
+          <select id="input-type-hakusei">
+            <option value="confirmed">確定データ</option>
+            <option value="estimated">予想データ</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-reg" onclick="registerData('hakusei')">登録</button>
+        <button class="btn-item-clear" onclick="clearSingleData('hakusei')">白青FBデータクリア</button>
+      </div>
     </div>
   </div>
 
   <!-- 仙幻FBエリア -->
   <div class="card" id="card-sengen">
     <div class="card-title">仙幻FB</div>
-    <div class="info-group">前回の時間・場所 (TW): <span id="prev-sengen">--:-- (未登録)</span></div>
-    <div class="info-group">次の出現時間 (TW): <span id="next-time-sengen">--:--</span><span id="badge-time-sengen" class="status-badge"></span></div>
-    <div class="info-group">次の出現場所: <span id="next-loc-sengen">--</span><span id="badge-loc-sengen" class="status-badge"></span></div>
+    <div class="info-group">前回の時間場所：<span id="prev-sengen">--:-- (未登録)</span></div>
+    <div class="info-group info-row">
+      <div>次の時間：<span id="next-time-sengen">--:--</span><span id="badge-time-sengen" class="status-badge"></span></div>
+      <div>場所：<span id="next-loc-sengen">--</span><span id="badge-loc-sengen" class="status-badge"></span></div>
+    </div>
     
     <div class="form-group">
-      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">仙幻FB情報登録 (※台湾時間)</div>
-      <label>出現曜日</label>
-      <select id="input-day-sengen">
-        <option value="月">月曜日</option>
-        <option value="火">火曜日</option>
-        <option value="水">水曜日</option>
-        <option value="木">木曜日</option>
-        <option value="金">金曜日</option>
-        <option value="土">土曜日</option>
-        <option value="日">日曜日</option>
-      </select>
-      <label>出現時間</label>
-      <input type="time" id="input-time-sengen">
-      <label>出現場所</label>
-      <select id="input-loc-sengen">
-        <option value="力王">力王</option>
-        <option value="山脈">山脈</option>
-        <option value="知性">知性</option>
-        <option value="荒野">荒野</option>
-      </select>
-      <label>情報種別</label>
-      <select id="input-type-sengen">
-        <option value="confirmed">確定データ</option>
-        <option value="estimated">予想データ</option>
-      </select>
-      <button onclick="registerData('sengen')">登録</button>
-      <button class="btn-item-clear" onclick="clearSingleData('sengen')">仙幻FBデータをクリア</button>
+      <div class="form-title">仙幻FB情報登録 (※台湾時間)</div>
+      <div class="grid-2col">
+        <div class="field-unit">
+          <label>曜日</label>
+          <select id="input-day-sengen">
+            <option value="月">月曜日</option>
+            <option value="火">火曜日</option>
+            <option value="水">水曜日</option>
+            <option value="木">木曜日</option>
+            <option value="金">金曜日</option>
+            <option value="土">土曜日</option>
+            <option value="日">日曜日</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>時間</label>
+          <input type="time" id="input-time-sengen">
+        </div>
+        <div class="field-unit">
+          <label>場所</label>
+          <select id="input-loc-sengen">
+            <option value="力王">力王</option>
+            <option value="山脈">山脈</option>
+            <option value="知性">知性</option>
+            <option value="荒野">荒野</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>種別</label>
+          <select id="input-type-sengen">
+            <option value="confirmed">確定データ</option>
+            <option value="estimated">予想データ</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-reg" onclick="registerData('sengen')">登録</button>
+        <button class="btn-item-clear" onclick="clearSingleData('sengen')">仙幻FBデータクリア</button>
+      </div>
     </div>
   </div>
 
-  <!-- 全データ一括クリアボタン -->
   <button class="btn-reset" onclick="resetAllData()">全登録データを一括クリア</button>
 
   <script>
@@ -240,7 +295,6 @@
       }
     }
 
-    // 単一項目リセット処理
     function clearSingleData(category) {
       const categoryLabels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
       if (!confirm(`${categoryLabels[category]}の登録データをクリアしますか？`)) return;
@@ -254,7 +308,6 @@
       }
     }
 
-    // 全データ一括リセット処理
     function resetAllData() {
       if (!confirm("すべてのタイマー登録データを初期化しますか？")) return;
 
