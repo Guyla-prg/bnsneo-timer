@@ -10,6 +10,10 @@
     .clock-banner { text-align: center; font-size: 12px; color: #aaa; margin-bottom: 8px; background: #1a1a1a; padding: 4px; border-radius: 6px; border: 1px solid #333; }
     .clock-banner span { color: #00ffcc; font-weight: bold; font-size: 14px; }
     
+    .exe-link { text-align: center; margin-bottom: 8px; font-size: 11px; }
+    .exe-link a { color: #00ffcc; text-decoration: underline; font-weight: bold; }
+    .exe-link a:hover { color: #80ffe5; }
+
     .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
     .card-title { font-size: 15px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 3px; margin-bottom: 6px; color: #ffeb3b; }
     
@@ -44,6 +48,12 @@
 
   <h1>ブレソNeoタイマー</h1>
   
+  <div class="exe-link">
+    <a href="https://github.com/Guyla-prg/bnsneo-timer/releases/latest" target="_blank">
+      💻 PC用デスクトップアプリ（Exe版）のダウンロードはこちら
+    </a>
+  </div>
+
   <div class="clock-banner">
     現在時刻 [台湾時間 (UTC+8)]: <span id="tw-clock">00:00:00</span>
   </div>
@@ -270,7 +280,6 @@
       updateUI(category, payload);
     }
 
-    // 個別データのクリア処理
     function clearSingleData(category) {
       const categoryLabels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
       if (!confirm(`${categoryLabels[category]}のデータをクリアしますか？`)) return;
@@ -279,11 +288,9 @@
       localStorage.removeItem(`timer_${category}`);
       updateUI(category, { ...defaultPayload });
       
-      // 画面を再読み込みして最新化
       location.reload();
     }
 
-    // 一括クリア処理
     function resetAllData() {
       if (!confirm("画面上のすべての登録データを一括クリアしますか？")) return;
 
@@ -294,7 +301,6 @@
       });
       alertedSet.clear();
       
-      // 画面を再読み込みして最新化
       location.reload();
     }
 
