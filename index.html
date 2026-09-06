@@ -530,11 +530,11 @@
             let targetJstH = twH + 1;
             let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetJstH, twM, 0);
             
-            const diffMs = targetDate.getTime() - now.getTime();
-            const diffMin = Math.floor(diffMs / 60000);
+            // 秒単位までの正確な残時間を算出
+            const diffSec = Math.floor((targetDate.getTime() - now.getTime()) / 1000);
 
-            // 【5分前通知】（儀式・FB 共通）
-            if (diffMin === 5) {
+            // 【5分前通知】（295秒〜305秒の間：5分00秒前後）
+            if (diffSec >= 295 && diffSec <= 305) {
               const key = `${cat}-5m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
               if (!alertedSet.has(key)) {
                 alertedSet.add(key);
@@ -553,8 +553,8 @@
               }
             }
 
-            // 【ジャスト（0分前／予兆時刻）通知】（儀式・FB 共通）
-            if (diffMin === 0) {
+            // 【ジャスト（0分前／予兆時刻）通知】（-5秒〜5秒の間：0分00秒前後）
+            if (diffSec >= -5 && diffSec <= 5) {
               const key = `${cat}-0m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
               if (!alertedSet.has(key)) {
                 alertedSet.add(key);
@@ -584,10 +584,10 @@
         twWbHours.forEach(twTargetH => {
           const jstTargetH = twTargetH + 1;
           const targetJst = new Date(now.getFullYear(), now.getMonth(), now.getDate(), jstTargetH, 0, 0);
-          const diffMin = Math.floor((targetJst - now) / 60000);
+          const diffSec = Math.floor((targetJst.getTime() - now.getTime()) / 1000);
 
-          // 10分前
-          if (diffMin === 10) {
+          // 10分前 (595秒〜605秒)
+          if (diffSec >= 595 && diffSec <= 605) {
             const key = `wb-${twTargetH}-10m-${now.getDate()}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
@@ -597,8 +597,8 @@
             }
           }
 
-          // 5分前
-          if (diffMin === 5) {
+          // 5分前 (295秒〜305秒)
+          if (diffSec >= 295 && diffSec <= 305) {
             const key = `wb-${twTargetH}-5m-${now.getDate()}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
