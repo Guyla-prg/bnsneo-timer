@@ -262,7 +262,6 @@
       owner: 'Guyla-prg',
       repo: 'bnsneo-timer',
       path: 'data.json',
-      // 分割難読化によりGitHubのエラーチェックを回避して安全に自動通信
       tkParts: ['ghp_', 'agd1aaoDng8n0B03', 'eMYvV0VWQy5S7y19PIS8']
     };
 
@@ -274,6 +273,7 @@
       sengen: []
     };
 
+    let isLocalUpdating = false;
     let currentModalCategory = null;
     const alertedSet = new Set();
 
@@ -304,8 +304,8 @@
       return window.btoa(unescape(encodeURIComponent(str)));
     }
 
-    // 裏側でGitHubへ全自動同期（トークン入力は一切不要）
     async function syncToGitHub() {
+      isLocalUpdating = true;
       const token = getSyncToken();
       const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
       try {
@@ -329,7 +329,7 @@
         };
         if (sha) bodyData.sha = sha;
 
-        await fetch(url, {
+        const putRes = await fetch(url, {
           method: 'PUT',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -338,8 +338,17 @@
           },
           body: JSON.stringify(bodyData)
         });
+
+        if (!putRes.ok) {
+          const errDetail = await putRes.json();
+          console.error("GitHub Sync Error Detail:", errDetail);
+        }
       } catch (err) {
         console.error("GitHub Sync Error:", err);
+      } finally {
+        setTimeout(() => {
+          isLocalUpdating = false;
+        }, 10000);
       }
     }
 
@@ -521,12 +530,16 @@
     }
 
     function fetchGitHubData() {
+      if (isLocalUpdating) return;
+
       fetch('./data.json?t=' + new Date().getTime())
         .then(response => {
           if (response.ok) return response.json();
           throw new Error('data.json Load Failed');
         })
         .then(data => {
+          if (isLocalUpdating) return;
+
           ['ritual', 'hakusei', 'sengen'].forEach(cat => {
             if (data[cat] && Array.isArray(data[cat])) {
               store[cat] = data[cat];
