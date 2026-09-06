@@ -308,7 +308,6 @@
       return decodeURIComponent(escape(window.atob(str)));
     }
 
-    // GitHub API経由で確実に最新データを書き込む
     async function syncToGitHub() {
       isSyncing = true;
       const token = getSyncToken();
@@ -349,7 +348,6 @@
         if (!putRes.ok) {
           const errDetail = await putRes.json();
           console.error("GitHub Sync Error:", errDetail);
-          alert("GitHubへの同期に失敗しました: " + (errDetail.message || "エラー"));
         }
       } catch (err) {
         console.error("GitHub Sync Error:", err);
@@ -537,7 +535,6 @@
       }
     }
 
-    // GitHub APIからダイレクトに最新のRAWデータを読み込み（キャッシュ完全回避）
     async function fetchGitHubData() {
       if (isSyncing) return;
 
@@ -601,19 +598,19 @@
 
           const targetTwDayNum = dayMap[item.nextDay];
           const [twH, twM] = item.nextTime.split(':').map(Number);
-
           const currentTwDayNum = twDate.getDay();
 
           if (targetTwDayNum === currentTwDayNum) {
-            let targetJstH = twH + 1;
-            let targetDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetJstH, twM, 0);
-            
-            const diffSec = Math.floor((targetDate.getTime() - now.getTime()) / 1000);
+            const targetTwDate = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate(), twH, twM, 0);
+            const diffSec = Math.floor((targetTwDate.getTime() - twDate.getTime()) / 1000);
 
-            if (diffSec >= 295 && diffSec <= 305) {
+            // 【5分前通知】（285秒〜315秒：5分前±15秒）
+            if (diffSec >= 285 && diffSec <= 315) {
               const key = `${cat}-5m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
               if (!alertedSet.has(key)) {
                 alertedSet.add(key);
+
+                const isEstimated = (item.type === 'estimated');
 
                 if (cat === 'ritual') {
                   const notifyMsg = `${item.nextTime}：${item.nextLoc} で儀式が始まります`;
@@ -621,18 +618,27 @@
                   notify('ブレソNeoタイマー (儀式5分前)', notifyMsg);
                   speak(speakMsg);
                 } else {
-                  const notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} に湧く可能性があります`;
-                  const speakMsg = `${categoryNames[cat]}の ${item.nextLoc} にフィールドボスが湧く5分前です`;
+                  let notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
+                  let speakMsg = `${categoryNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
+
+                  if (isEstimated) {
+                    notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} に湧く可能性があります`;
+                    speakMsg = `${categoryNames[cat]}の ${item.nextLoc} にフィールドボスが湧くかもしれない 5分前です`;
+                  }
+
                   notify('ブレソNeoタイマー (FB5分前)', notifyMsg);
                   speak(speakMsg);
                 }
               }
             }
 
-            if (diffSec >= -5 && diffSec <= 5) {
+            // 【ジャスト（0分前／予兆時刻）通知】（-15秒〜15秒）
+            if (diffSec >= -15 && diffSec <= 15) {
               const key = `${cat}-0m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
               if (!alertedSet.has(key)) {
                 alertedSet.add(key);
+
+                const isEstimated = (item.type === 'estimated');
 
                 if (cat === 'ritual') {
                   const notifyMsg = `${item.nextTime}：${item.nextLoc} で儀式予兆の時間です`;
@@ -640,8 +646,14 @@
                   notify('ブレソNeoタイマー (儀式予兆発生)', notifyMsg);
                   speak(speakMsg);
                 } else {
-                  const notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} に予兆が発生しました`;
-                  const speakMsg = `${categoryNames[cat]}の ${item.nextLoc} に予兆が発生しました`;
+                  let notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
+                  let speakMsg = `${categoryNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
+
+                  if (isEstimated) {
+                    notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} に予兆が発生する可能性があります`;
+                    speakMsg = `${categoryNames[cat]}の ${item.nextLoc} にフィールドボスの予兆が出るかもしれない時間です`;
+                  }
+
                   notify('ブレソNeoタイマー (FB予兆発生)', notifyMsg);
                   speak(speakMsg);
                 }
@@ -651,17 +663,17 @@
         });
       });
 
+      // ワールドボス（WB）通知：10分前 ＆ 5分前
       if (document.getElementById('wbNotice').checked) {
         const isWeekend = (twDate.getDay() === 0 || twDate.getDay() === 6);
         const twWbHours = isWeekend ? [15, 21] : [21];
 
         twWbHours.forEach(twTargetH => {
-          const jstTargetH = twTargetH + 1;
-          const targetJst = new Date(now.getFullYear(), now.getMonth(), now.getDate(), jstTargetH, 0, 0);
-          const diffSec = Math.floor((targetJst.getTime() - now.getTime()) / 1000);
+          const targetTwDate = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate(), twTargetH, 0, 0);
+          const diffSec = Math.floor((targetTwDate.getTime() - twDate.getTime()) / 1000);
 
-          if (diffSec >= 595 && diffSec <= 605) {
-            const key = `wb-${twTargetH}-10m-${now.getDate()}`;
+          if (diffSec >= 585 && diffSec <= 615) {
+            const key = `wb-${twTargetH}-10m-${twDate.getDate()}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
               const msg = `ワールドボス10分前です`;
@@ -670,8 +682,8 @@
             }
           }
 
-          if (diffSec >= 295 && diffSec <= 305) {
-            const key = `wb-${twTargetH}-5m-${now.getDate()}`;
+          if (diffSec >= 285 && diffSec <= 315) {
+            const key = `wb-${twTargetH}-5m-${twDate.getDate()}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
               const msg = `ワールドボス5分前です`;
