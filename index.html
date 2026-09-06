@@ -73,7 +73,7 @@
   </div>
 
   <div class="checkbox-container">
-    <input type="checkbox" id="wbNotice">
+    <input type="checkbox" id="wbNotice" checked>
     <label for="wbNotice" style="margin:0; font-size:12px; color:#e0e0e0;">WB通知 (平日 21:00 / 週末 15:00, 21:00 [台湾時間])</label>
   </div>
 
@@ -373,7 +373,6 @@
         return;
       }
 
-      // 予想データの場合は場所選択を「不明」に固定設定
       if (typeVal === 'estimated') {
         locVal = '不明';
       }
