@@ -6,7 +6,9 @@
   <title>ブレソNeoタイマー</title>
   <style>
     body { font-family: sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 15px; max-width: 480px; margin: 0 auto; }
-    h1 { font-size: 20px; text-align: center; color: #00ffcc; margin-bottom: 10px; }
+    h1 { font-size: 20px; text-align: center; color: #00ffcc; margin-bottom: 5px; }
+    .clock-banner { text-align: center; font-size: 14px; color: #aaa; margin-bottom: 15px; background: #1a1a1a; padding: 6px; border-radius: 6px; border: 1px solid #333; }
+    .clock-banner span { color: #00ffcc; font-weight: bold; font-size: 16px; }
     .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
     .card-title { font-size: 16px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 8px; color: #ffeb3b; }
     .info-group { margin-bottom: 6px; font-size: 14px; }
@@ -29,11 +31,16 @@
 <body>
 
   <h1>ブレソNeoタイマー</h1>
+  
+  <!-- 台湾時間時計表示 -->
+  <div class="clock-banner">
+    台湾時間 (UTC+8): <span id="tw-clock">00:00:00</span>
+  </div>
 
   <!-- WB通知設定 -->
   <div class="checkbox-container">
     <input type="checkbox" id="wbNotice">
-    <label for="wbNotice" style="margin:0; font-size:14px;">WB通知を有効化 (平日21時 / 週末15時・21時)</label>
+    <label for="wbNotice" style="margin:0; font-size:14px;">WB通知 (平日 21:00 / 週末 15:00, 21:00 [台湾時間])</label>
   </div>
 
   <!-- 儀式エリア -->
@@ -121,7 +128,7 @@
   </div>
 
   <script>
-    // Firebaseの初期設定
+    // Firebase初期設定
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -137,10 +144,9 @@
       firebase.initializeApp(firebaseConfig);
       db = firebase.database();
     } catch(e) {
-      console.log("Firebase未設定のため、ローカルモードで動作します");
+      console.log("Firebase未設定のためローカルモード動作");
     }
 
-    // 内部データ保持オブジェクト
     const appData = {
       ritual: { prevTime: '', prevLoc: '', nextTime: '', nextLoc: '', type: 'confirmed' },
       hakusei: { prevTime: '', prevLoc: '', nextTime: '', nextLoc: '', type: 'confirmed' },
@@ -149,7 +155,6 @@
 
     const alertedSet = new Set();
 
-    // 音声読み上げ関数
     function speak(text) {
       if ('speechSynthesis' in window) {
         const uttr = new SpeechSynthesisUtterance(text);
@@ -158,19 +163,16 @@
       }
     }
 
-    // デスクトップ通知関数
     function notify(title, body) {
       if (Notification.permission === 'granted') {
         new Notification(title, { body });
       }
     }
 
-    // 初回通知許可取得
     if ('Notification' in window && Notification.permission !== 'granted') {
       Notification.requestPermission();
     }
 
-    // 登録処理
     function registerData(category) {
       const timeVal = document.getElementById(`input-time-${category}`).value;
       const locVal = document.getElementById(`input-loc-${category}`).value;
@@ -197,7 +199,6 @@
       }
     }
 
-    // UIの描画更新
     function updateUI(category, data) {
       appData[category] = data;
       document.getElementById(`prev-${category}`).innerText = `${data.prevTime || '--:--'} (${data.prevLoc || '未登録'})`;
@@ -215,7 +216,6 @@
       locBadge.className = className;
     }
 
-    // データ読み込み（Firebase / ローカルストレージ）
     if (db) {
       ['ritual', 'hakusei', 'sengen'].forEach(category => {
         db.ref(`timers/${category}`).on('value', (snapshot) => {
@@ -230,11 +230,19 @@
       });
     }
 
-    // タイマーおよびアナウンス監視ロジック（1秒毎）
+    // 1秒毎の監視およびリアルタイム時計更新
     setInterval(() => {
-      const now = new Date();
+      const now = new Date(); // 日本環境ではJST
 
-      // FB & 儀式 のチェック
+      // 1. 画面上部に台湾時間を表示
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const twDate = new Date(utc + (3600000 * 8));
+      const twTimeStr = String(twDate.getHours()).padStart(2, '0') + ':' +
+                        String(twDate.getMinutes()).padStart(2, '0') + ':' +
+                        String(twDate.getSeconds()).padStart(2, '0');
+      document.getElementById('tw-clock').innerText = twTimeStr;
+
+      // 2. FB & 儀式 チェック
       const categoryNames = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
         const item = appData[cat];
@@ -244,7 +252,6 @@
         const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
         const diffMin = Math.floor((target - now) / 60000);
 
-        // 1. 確定データ（10分前通知）：「〇〇エリアに〇〇が出現します」
         if (item.type === 'confirmed' && diffMin === 10) {
           const key = `${cat}-10m-${item.nextTime}`;
           if (!alertedSet.has(key)) {
@@ -255,7 +262,6 @@
           }
         }
 
-        // 2. 予想データ（5分前通知）：「あと5分で〇〇が出現するかもしれません」
         if (item.type === 'estimated' && diffMin === 5) {
           const key = `${cat}-5m-${item.nextTime}`;
           if (!alertedSet.has(key)) {
@@ -267,20 +273,18 @@
         }
       });
 
-      // ワールドボス（WB）チェック
+      // 3. ワールドボス（WB）チェック（台湾時間基準 -> 日本時間の10分前・5分前で通知）
       if (document.getElementById('wbNotice').checked) {
-        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-        const taiwanDate = new Date(utc + (3600000 * 8));
-        const isWeekend = (taiwanDate.getDay() === 0 || taiwanDate.getDay() === 6);
+        const isWeekend = (twDate.getDay() === 0 || twDate.getDay() === 6);
+        // 台湾時間 21:00 は 日本時間 22:00 / 台湾時間 15:00 は 日本時間 16:00
+        const jstWbHours = isWeekend ? [16, 22] : [22];
 
-        const wbTimes = isWeekend ? [15, 21] : [21];
-        
-        wbTimes.forEach(targetH => {
-          const target = new Date(taiwanDate.getFullYear(), taiwanDate.getMonth(), taiwanDate.getDate(), targetH, 0, 0);
-          const diffMin = Math.floor((target - taiwanDate) / 60000);
+        jstWbHours.forEach(targetH => {
+          const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetH, 0, 0);
+          const diffMin = Math.floor((target - now) / 60000);
 
           if (diffMin === 10 || diffMin === 5) {
-            const key = `wb-${targetH}-${diffMin}-${taiwanDate.getDate()}`;
+            const key = `wb-${targetH}-${diffMin}-${now.getDate()}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
               const msg = `ワールドボス${diffMin}分前です`;
