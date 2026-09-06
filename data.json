@@ -37,7 +37,17 @@
       "type": "confirmed"
     }
   ],
-  "hakusei": [],
+  "hakusei": [
+    {
+      "id": 1788732122059,
+      "prevTime": "--:--",
+      "prevLoc": "--",
+      "nextDay": "月",
+      "nextTime": "05:25",
+      "nextLoc": "樹林",
+      "type": "confirmed"
+    }
+  ],
   "sengen": [
     {
       "id": 1788708414736,
