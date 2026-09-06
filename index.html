@@ -1,4 +1,230 @@
-// タイマーおよびアナウンス監視ロジック（1秒毎）
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ブレソNeoタイマー</title>
+  <style>
+    body { font-family: sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 15px; max-width: 480px; margin: 0 auto; }
+    h1 { font-size: 20px; text-align: center; color: #00ffcc; margin-bottom: 10px; }
+    .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 12px; margin-bottom: 15px; }
+    .card-title { font-size: 16px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; margin-bottom: 8px; color: #ffeb3b; }
+    .info-group { margin-bottom: 6px; font-size: 14px; }
+    .status-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 5px; }
+    .status-confirmed { background: #2e7d32; color: #fff; }
+    .status-estimated { background: #f57f17; color: #fff; }
+    .form-group { background: #2a2a2a; padding: 8px; border-radius: 6px; margin-top: 8px; }
+    label { font-size: 12px; display: block; margin-bottom: 2px; }
+    select, input[type="time"], button { width: 100%; padding: 6px; margin-bottom: 6px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; }
+    button { background: #0288d1; font-weight: bold; cursor: pointer; border: none; margin-top: 4px; }
+    button:hover { opacity: 0.9; }
+    .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; background: #222; padding: 8px; border-radius: 6px; }
+    .checkbox-container input { width: auto; margin: 0; }
+  </style>
+
+  <!-- Firebase SDK (リアルタイム全ユーザー共有用) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body>
+
+  <h1>ブレソNeoタイマー</h1>
+
+  <!-- WB通知設定 -->
+  <div class="checkbox-container">
+    <input type="checkbox" id="wbNotice">
+    <label for="wbNotice" style="margin:0; font-size:14px;">WB通知を有効化 (平日21時 / 週末15時・21時)</label>
+  </div>
+
+  <!-- 儀式エリア -->
+  <div class="card" id="card-ritual">
+    <div class="card-title">儀式</div>
+    <div class="info-group">前回の時間・場所: <span id="prev-ritual">--:-- (未登録)</span></div>
+    <div class="info-group">次の出現時間: <span id="next-time-ritual">--:--</span><span id="badge-time-ritual" class="status-badge"></span></div>
+    <div class="info-group">次の出現場所: <span id="next-loc-ritual">--</span><span id="badge-loc-ritual" class="status-badge"></span></div>
+    
+    <div class="form-group">
+      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">儀式情報登録</div>
+      <label>出現時間</label>
+      <input type="time" id="input-time-ritual">
+      <label>出現場所</label>
+      <select id="input-loc-ritual">
+        <option value="御龍林">御龍林</option>
+        <option value="大漠">大漠</option>
+        <option value="水月平原">水月平原</option>
+        <option value="白青山脈">白青山脈</option>
+      </select>
+      <label>情報種別</label>
+      <select id="input-type-ritual">
+        <option value="confirmed">確定データ</option>
+        <option value="estimated">予想データ</option>
+      </select>
+      <button onclick="registerData('ritual')">登録</button>
+    </div>
+  </div>
+
+  <!-- 白青FBエリア -->
+  <div class="card" id="card-hakusei">
+    <div class="card-title">白青FB</div>
+    <div class="info-group">前回の時間・場所: <span id="prev-hakusei">--:-- (未登録)</span></div>
+    <div class="info-group">次の出現時間: <span id="next-time-hakusei">--:--</span><span id="badge-time-hakusei" class="status-badge"></span></div>
+    <div class="info-group">次の出現場所: <span id="next-loc-hakusei">--</span><span id="badge-loc-hakusei" class="status-badge"></span></div>
+    
+    <div class="form-group">
+      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">白青FB情報登録</div>
+      <label>出現時間</label>
+      <input type="time" id="input-time-hakusei">
+      <label>出現場所</label>
+      <select id="input-loc-hakusei">
+        <option value="雪原">雪原</option>
+        <option value="北方討伐隊">北方討伐隊</option>
+      </select>
+      <label>情報種別</label>
+      <select id="input-type-hakusei">
+        <option value="confirmed">確定データ</option>
+        <option value="estimated">予想データ</option>
+      </select>
+      <button onclick="registerData('hakusei')">登録</button>
+    </div>
+  </div>
+
+  <!-- 仙幻FBエリア -->
+  <div class="card" id="card-sengen">
+    <div class="card-title">仙幻FB</div>
+    <div class="info-group">前回の時間・場所: <span id="prev-sengen">--:-- (未登録)</span></div>
+    <div class="info-group">次の出現時間: <span id="next-time-sengen">--:--</span><span id="badge-time-sengen" class="status-badge"></span></div>
+    <div class="info-group">次の出現場所: <span id="next-loc-sengen">--</span><span id="badge-loc-sengen" class="status-badge"></span></div>
+    
+    <div class="form-group">
+      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">仙幻FB情報登録</div>
+      <label>出現時間</label>
+      <input type="time" id="input-time-sengen">
+      <label>出現場所</label>
+      <select id="input-loc-sengen">
+        <option value="山脈">山脈</option>
+        <option value="森林">森林</option>
+        <option value="荒野">荒野</option>
+      </select>
+      <label>情報種別</label>
+      <select id="input-type-sengen">
+        <option value="confirmed">確定データ</option>
+        <option value="estimated">予想データ</option>
+      </select>
+      <button onclick="registerData('sengen')">登録</button>
+    </div>
+  </div>
+
+  <script>
+    // Firebaseの初期設定
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    let db = null;
+    try {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.database();
+    } catch(e) {
+      console.log("Firebase未設定のため、ローカルモードで動作します");
+    }
+
+    // 内部データ保持オブジェクト
+    const appData = {
+      ritual: { prevTime: '', prevLoc: '', nextTime: '', nextLoc: '', type: 'confirmed' },
+      hakusei: { prevTime: '', prevLoc: '', nextTime: '', nextLoc: '', type: 'confirmed' },
+      sengen: { prevTime: '', prevLoc: '', nextTime: '', nextLoc: '', type: 'confirmed' }
+    };
+
+    const alertedSet = new Set();
+
+    // 音声読み上げ関数
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        const uttr = new SpeechSynthesisUtterance(text);
+        uttr.lang = 'ja-JP';
+        window.speechSynthesis.speak(uttr);
+      }
+    }
+
+    // デスクトップ通知関数
+    function notify(title, body) {
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body });
+      }
+    }
+
+    // 初回通知許可取得
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    // 登録処理
+    function registerData(category) {
+      const timeVal = document.getElementById(`input-time-${category}`).value;
+      const locVal = document.getElementById(`input-loc-${category}`).value;
+      const typeVal = document.getElementById(`input-type-${category}`).value;
+
+      if (!timeVal) {
+        alert("出現時間を入力してください");
+        return;
+      }
+
+      const payload = {
+        prevTime: appData[category].nextTime || '--:--',
+        prevLoc: appData[category].nextLoc || '--',
+        nextTime: timeVal,
+        nextLoc: locVal,
+        type: typeVal
+      };
+
+      if (db) {
+        db.ref(`timers/${category}`).set(payload);
+      } else {
+        localStorage.setItem(`timer_${category}`, JSON.stringify(payload));
+        updateUI(category, payload);
+      }
+    }
+
+    // UIの描画更新
+    function updateUI(category, data) {
+      appData[category] = data;
+      document.getElementById(`prev-${category}`).innerText = `${data.prevTime || '--:--'} (${data.prevLoc || '未登録'})`;
+      document.getElementById(`next-time-${category}`).innerText = data.nextTime || '--:--';
+      document.getElementById(`next-loc-${category}`).innerText = data.nextLoc || '--';
+
+      const timeBadge = document.getElementById(`badge-time-${category}`);
+      const locBadge = document.getElementById(`badge-loc-${category}`);
+      const label = data.type === 'confirmed' ? '確定' : '予想';
+      const className = data.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+
+      timeBadge.innerText = label;
+      timeBadge.className = className;
+      locBadge.innerText = label;
+      locBadge.className = className;
+    }
+
+    // データ読み込み（Firebase / ローカルストレージ）
+    if (db) {
+      ['ritual', 'hakusei', 'sengen'].forEach(category => {
+        db.ref(`timers/${category}`).on('value', (snapshot) => {
+          const val = snapshot.val();
+          if (val) updateUI(category, val);
+        });
+      });
+    } else {
+      ['ritual', 'hakusei', 'sengen'].forEach(category => {
+        const local = localStorage.getItem(`timer_${category}`);
+        if (local) updateUI(category, JSON.parse(local));
+      });
+    }
+
+    // タイマーおよびアナウンス監視ロジック（1秒毎）
     setInterval(() => {
       const now = new Date();
 
@@ -24,7 +250,6 @@
         }
 
         // 2. 予想データ（5分前通知）：「あと5分で〇〇が出現するかもしれません」
-        // ※各カテゴリ（白青FB / 仙幻FB / 儀式）の名前を個別に差し込んでアナウンスします
         if (item.type === 'estimated' && diffMin === 5) {
           const key = `${cat}-5m-${item.nextTime}`;
           if (!alertedSet.has(key)) {
@@ -38,12 +263,10 @@
 
       // ワールドボス（WB）チェック
       if (document.getElementById('wbNotice').checked) {
-        // 台湾時間（UTC+8）計算
         const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
         const taiwanDate = new Date(utc + (3600000 * 8));
         const isWeekend = (taiwanDate.getDay() === 0 || taiwanDate.getDay() === 6);
 
-        // 平日21:00 / 週末15:00, 21:00
         const wbTimes = isWeekend ? [15, 21] : [21];
         
         wbTimes.forEach(targetH => {
@@ -62,3 +285,6 @@
         });
       }
     }, 1000);
+  </script>
+</body>
+</html>
