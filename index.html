@@ -16,7 +16,7 @@
     .form-group { background: #2a2a2a; padding: 8px; border-radius: 6px; margin-top: 8px; }
     label { font-size: 12px; display: block; margin-bottom: 2px; }
     select, input[type="time"], button { width: 100%; padding: 6px; margin-bottom: 6px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; }
-    button { background: #0288d1; font-weight: bold; cursor: pointer; border: none; margin-top: 4px; }
+    button { background: #0288d1; font-weight: bold; cursor: pointer; border: none; margin-top: 4px; color: #fff; }
     button:hover { opacity: 0.9; }
     .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; background: #222; padding: 8px; border-radius: 6px; }
     .checkbox-container input { width: auto; margin: 0; }
@@ -49,10 +49,15 @@
       <input type="time" id="input-time-ritual">
       <label>出現場所</label>
       <select id="input-loc-ritual">
-        <option value="御龍林">御龍林</option>
-        <option value="大漠">大漠</option>
-        <option value="水月平原">水月平原</option>
-        <option value="白青山脈">白青山脈</option>
+        <option value="孤独">孤独</option>
+        <option value="海岸">海岸</option>
+        <option value="鬼都">鬼都</option>
+        <option value="灰狼">灰狼</option>
+        <option value="土門">土門</option>
+        <option value="黒森">黒森</option>
+        <option value="悲鳴">悲鳴</option>
+        <option value="染坊">染坊</option>
+        <option value="雪原">雪原</option>
       </select>
       <label>情報種別</label>
       <select id="input-type-ritual">
@@ -76,8 +81,8 @@
       <input type="time" id="input-time-hakusei">
       <label>出現場所</label>
       <select id="input-loc-hakusei">
-        <option value="雪原">雪原</option>
-        <option value="北方討伐隊">北方討伐隊</option>
+        <option value="平原">平原</option>
+        <option value="樹林">樹林</option>
       </select>
       <label>情報種別</label>
       <select id="input-type-hakusei">
@@ -101,8 +106,9 @@
       <input type="time" id="input-time-sengen">
       <label>出現場所</label>
       <select id="input-loc-sengen">
+        <option value="力王">力王</option>
         <option value="山脈">山脈</option>
-        <option value="森林">森林</option>
+        <option value="知性">知性</option>
         <option value="荒野">荒野</option>
       </select>
       <label>情報種別</label>
