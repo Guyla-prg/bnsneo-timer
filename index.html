@@ -266,27 +266,36 @@
       };
 
       localStorage.setItem(`timer_${category}`, JSON.stringify(payload));
+      localStorage.removeItem(`cleared_${category}`);
       updateUI(category, payload);
     }
 
+    // 個別データのクリア処理
     function clearSingleData(category) {
       const categoryLabels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
       if (!confirm(`${categoryLabels[category]}のデータをクリアしますか？`)) return;
 
-      const payload = { ...defaultPayload };
+      localStorage.setItem(`cleared_${category}`, 'true');
       localStorage.removeItem(`timer_${category}`);
-      updateUI(category, payload);
+      updateUI(category, { ...defaultPayload });
+      
+      // 画面を再読み込みして最新化
+      location.reload();
     }
 
+    // 一括クリア処理
     function resetAllData() {
       if (!confirm("画面上のすべての登録データを一括クリアしますか？")) return;
 
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
-        const payload = { ...defaultPayload };
+        localStorage.setItem(`cleared_${cat}`, 'true');
         localStorage.removeItem(`timer_${cat}`);
-        updateUI(cat, payload);
+        updateUI(cat, { ...defaultPayload });
       });
       alertedSet.clear();
+      
+      // 画面を再読み込みして最新化
+      location.reload();
     }
 
     function updateUI(category, data) {
@@ -321,15 +330,27 @@
         })
         .then(data => {
           ['ritual', 'hakusei', 'sengen'].forEach(cat => {
-            if (data[cat]) {
+            const isCleared = localStorage.getItem(`cleared_${cat}`) === 'true';
+            const local = localStorage.getItem(`timer_${cat}`);
+            
+            if (local) {
+              updateUI(cat, JSON.parse(local));
+            } else if (isCleared) {
+              updateUI(cat, { ...defaultPayload });
+            } else if (data[cat]) {
               updateUI(cat, data[cat]);
             }
           });
         })
         .catch(() => {
           ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+            const isCleared = localStorage.getItem(`cleared_${cat}`) === 'true';
             const local = localStorage.getItem(`timer_${cat}`);
-            updateUI(cat, local ? JSON.parse(local) : { ...defaultPayload });
+            if (local) {
+              updateUI(cat, JSON.parse(local));
+            } else if (isCleared) {
+              updateUI(cat, { ...defaultPayload });
+            }
           });
         });
     }
