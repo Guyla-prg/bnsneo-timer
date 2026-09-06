@@ -1,26 +1,5 @@
 {
-  "ritual": {
-    "nextDay": "月",
-    "nextTime": "15:40",
-    "nextLoc": "鬼都",
-    "type": "confirmed",
-    "prevTime": "--:--",
-    "prevLoc": "--"
-  },
-  "hakusei": {
-    "nextDay": "月",
-    "nextTime": "16:00",
-    "nextLoc": "樹林",
-    "type": "confirmed",
-    "prevTime": "--:--",
-    "prevLoc": "--"
-  },
-  "sengen": {
-    "nextDay": "月",
-    "nextTime": "17:00",
-    "nextLoc": "荒野",
-    "type": "estimated",
-    "prevTime": "--:--",
-    "prevLoc": "--"
-  }
+  "ritual": [],
+  "hakusei": [],
+  "sengen": []
 }
