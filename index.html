@@ -1,0 +1,64 @@
+// タイマーおよびアナウンス監視ロジック（1秒毎）
+    setInterval(() => {
+      const now = new Date();
+
+      // FB & 儀式 のチェック
+      const categoryNames = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+      ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+        const item = appData[cat];
+        if (!item.nextTime) return;
+
+        const [h, m] = item.nextTime.split(':').map(Number);
+        const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m, 0);
+        const diffMin = Math.floor((target - now) / 60000);
+
+        // 1. 確定データ（10分前通知）：「〇〇エリアに〇〇が出現します」
+        if (item.type === 'confirmed' && diffMin === 10) {
+          const key = `${cat}-10m-${item.nextTime}`;
+          if (!alertedSet.has(key)) {
+            alertedSet.add(key);
+            const msg = `${item.nextLoc}エリアに${categoryNames[cat]}が出現します`;
+            notify('ブレソNeoタイマー', msg);
+            speak(msg);
+          }
+        }
+
+        // 2. 予想データ（5分前通知）：「あと5分で〇〇が出現するかもしれません」
+        // ※各カテゴリ（白青FB / 仙幻FB / 儀式）の名前を個別に差し込んでアナウンスします
+        if (item.type === 'estimated' && diffMin === 5) {
+          const key = `${cat}-5m-${item.nextTime}`;
+          if (!alertedSet.has(key)) {
+            alertedSet.add(key);
+            const msg = `あと5分で${categoryNames[cat]}が出現するかもしれません`;
+            notify('ブレソNeoタイマー', msg);
+            speak(msg);
+          }
+        }
+      });
+
+      // ワールドボス（WB）チェック
+      if (document.getElementById('wbNotice').checked) {
+        // 台湾時間（UTC+8）計算
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const taiwanDate = new Date(utc + (3600000 * 8));
+        const isWeekend = (taiwanDate.getDay() === 0 || taiwanDate.getDay() === 6);
+
+        // 平日21:00 / 週末15:00, 21:00
+        const wbTimes = isWeekend ? [15, 21] : [21];
+        
+        wbTimes.forEach(targetH => {
+          const target = new Date(taiwanDate.getFullYear(), taiwanDate.getMonth(), taiwanDate.getDate(), targetH, 0, 0);
+          const diffMin = Math.floor((target - taiwanDate) / 60000);
+
+          if (diffMin === 10 || diffMin === 5) {
+            const key = `wb-${targetH}-${diffMin}-${taiwanDate.getDate()}`;
+            if (!alertedSet.has(key)) {
+              alertedSet.add(key);
+              const msg = `ワールドボス${diffMin}分前です`;
+              notify('ワールドボス通知', msg);
+              speak(msg);
+            }
+          }
+        });
+      }
+    }, 1000);
