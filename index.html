@@ -20,11 +20,12 @@
     select, input[type="time"], button { width: 100%; padding: 6px; margin-bottom: 6px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; }
     button { background: #0288d1; font-weight: bold; cursor: pointer; border: none; margin-top: 4px; color: #fff; }
     button:hover { opacity: 0.9; }
+    .btn-reset { background: #c62828 !important; margin-top: 10px; }
     .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; background: #222; padding: 8px; border-radius: 6px; }
     .checkbox-container input { width: auto; margin: 0; }
   </style>
 
-  <!-- Firebase SDK (リアルタイム全ユーザー共有用) -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
@@ -32,12 +33,10 @@
 
   <h1>ブレソNeoタイマー</h1>
   
-  <!-- 台湾時間時計表示 -->
   <div class="clock-banner">
     現在時刻 [台湾時間 (UTC+8)]: <span id="tw-clock">00:00:00</span>
   </div>
 
-  <!-- WB通知設定 -->
   <div class="checkbox-container">
     <input type="checkbox" id="wbNotice">
     <label for="wbNotice" style="margin:0; font-size:14px;">WB通知 (平日 21:00 / 週末 15:00, 21:00 [台湾時間])</label>
@@ -51,7 +50,7 @@
     <div class="info-group">次の出現場所: <span id="next-loc-ritual">--</span><span id="badge-loc-ritual" class="status-badge"></span></div>
     
     <div class="form-group">
-      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">儀式情報登録 (※台湾時間で入力)</div>
+      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">儀式情報登録 (※台湾時間)</div>
       <label>出現曜日</label>
       <select id="input-day-ritual">
         <option value="月">月曜日</option>
@@ -62,7 +61,7 @@
         <option value="土">土曜日</option>
         <option value="日">日曜日</option>
       </select>
-      <label>出現時間 (台湾時間)</label>
+      <label>出現時間</label>
       <input type="time" id="input-time-ritual">
       <label>出現場所</label>
       <select id="input-loc-ritual">
@@ -93,7 +92,7 @@
     <div class="info-group">次の出現場所: <span id="next-loc-hakusei">--</span><span id="badge-loc-hakusei" class="status-badge"></span></div>
     
     <div class="form-group">
-      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">白青FB情報登録 (※台湾時間で入力)</div>
+      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">白青FB情報登録 (※台湾時間)</div>
       <label>出現曜日</label>
       <select id="input-day-hakusei">
         <option value="月">月曜日</option>
@@ -104,7 +103,7 @@
         <option value="土">土曜日</option>
         <option value="日">日曜日</option>
       </select>
-      <label>出現時間 (台湾時間)</label>
+      <label>出現時間</label>
       <input type="time" id="input-time-hakusei">
       <label>出現場所</label>
       <select id="input-loc-hakusei">
@@ -128,7 +127,7 @@
     <div class="info-group">次の出現場所: <span id="next-loc-sengen">--</span><span id="badge-loc-sengen" class="status-badge"></span></div>
     
     <div class="form-group">
-      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">仙幻FB情報登録 (※台湾時間で入力)</div>
+      <div style="font-size:12px; font-weight:bold; margin-bottom:4px;">仙幻FB情報登録 (※台湾時間)</div>
       <label>出現曜日</label>
       <select id="input-day-sengen">
         <option value="月">月曜日</option>
@@ -139,7 +138,7 @@
         <option value="土">土曜日</option>
         <option value="日">日曜日</option>
       </select>
-      <label>出現時間 (台湾時間)</label>
+      <label>出現時間</label>
       <input type="time" id="input-time-sengen">
       <label>出現場所</label>
       <select id="input-loc-sengen">
@@ -157,8 +156,10 @@
     </div>
   </div>
 
+  <!-- 全データ一括クリアボタン -->
+  <button class="btn-reset" onclick="resetAllData()">全登録データを一括クリア</button>
+
   <script>
-    // Firebase初期設定
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT.firebaseapp.com",
@@ -177,10 +178,11 @@
       console.log("Firebase未設定のためローカルモード動作");
     }
 
+    const defaultPayload = { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' };
     const appData = {
-      ritual: { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' },
-      hakusei: { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' },
-      sengen: { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' }
+      ritual: { ...defaultPayload },
+      hakusei: { ...defaultPayload },
+      sengen: { ...defaultPayload }
     };
 
     const alertedSet = new Set();
@@ -234,52 +236,71 @@
       }
     }
 
+    // 全データ一括リセット処理
+    function resetAllData() {
+      if (!confirm("すべてのタイマー登録データを初期化しますか？")) return;
+
+      ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+        const payload = { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' };
+        if (db) {
+          db.ref(`timers/${cat}`).set(payload);
+        } else {
+          localStorage.removeItem(`timer_${cat}`);
+          updateUI(cat, payload);
+        }
+      });
+      alertedSet.clear();
+      alert("データを一括クリアしました");
+    }
+
     function updateUI(category, data) {
       appData[category] = data;
       document.getElementById(`prev-${category}`).innerText = `${data.prevTime || '--:--'} (${data.prevLoc || '未登録'})`;
       
       const dayDisplay = data.nextDay ? `(${data.nextDay}) ` : '';
-      document.getElementById(`next-time-${category}`).innerText = `${dayDisplay}${data.nextTime || '--:--'}`;
+      document.getElementById(`next-time-${category}`).innerText = data.nextTime ? `${dayDisplay}${data.nextTime}` : '--:--';
       document.getElementById(`next-loc-${category}`).innerText = data.nextLoc || '--';
 
       const timeBadge = document.getElementById(`badge-time-${category}`);
       const locBadge = document.getElementById(`badge-loc-${category}`);
-      const label = data.type === 'confirmed' ? '確定' : '予想';
-      const className = data.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
-
-      timeBadge.innerText = label;
-      timeBadge.className = className;
-      locBadge.innerText = label;
-      locBadge.className = className;
+      
+      if (data.nextTime) {
+        const label = data.type === 'confirmed' ? '確定' : '予想';
+        const className = data.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+        timeBadge.innerText = label;
+        timeBadge.className = className;
+        locBadge.innerText = label;
+        locBadge.className = className;
+      } else {
+        timeBadge.innerText = '';
+        locBadge.innerText = '';
+      }
     }
 
     if (db) {
       ['ritual', 'hakusei', 'sengen'].forEach(category => {
         db.ref(`timers/${category}`).on('value', (snapshot) => {
           const val = snapshot.val();
-          if (val) updateUI(category, val);
+          updateUI(category, val || { ...defaultPayload });
         });
       });
     } else {
       ['ritual', 'hakusei', 'sengen'].forEach(category => {
         const local = localStorage.getItem(`timer_${category}`);
-        if (local) updateUI(category, JSON.parse(local));
+        updateUI(category, local ? JSON.parse(local) : { ...defaultPayload });
       });
     }
 
-    // 1秒毎の監視ロジック
     setInterval(() => {
-      const now = new Date(); // 日本環境での現在日時（JST）
+      const now = new Date();
 
-      // 1. 台湾時間の現在時刻計算・バナー更新
       const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-      const twDate = new Date(utc + (3600000 * 8)); // UTC+8 (台湾時間)
+      const twDate = new Date(utc + (3600000 * 8));
       const twTimeStr = String(twDate.getHours()).padStart(2, '0') + ':' +
                         String(twDate.getMinutes()).padStart(2, '0') + ':' +
                         String(twDate.getSeconds()).padStart(2, '0');
       document.getElementById('tw-clock').innerText = twTimeStr;
 
-      // 2. FB & 儀式 の判定
       const dayMap = { '日': 0, '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6 };
       const categoryNames = { hakusei: '白青', sengen: '仙幻' };
 
@@ -287,60 +308,38 @@
         const item = appData[cat];
         if (!item.nextTime || !item.nextDay) return;
 
-        // 入力された「台湾曜日」「台湾時間」を、日本時間のターゲット日時に変換 (+1時間)
         const targetTwDayNum = dayMap[item.nextDay];
         const [twH, twM] = item.nextTime.split(':').map(Number);
 
-        // 台湾時間(UTC+8)での対象日時オブジェクトを作成
-        // 台湾曜日が現在の台湾曜日と合致するかチェック
         if (targetTwDayNum === twDate.getDay()) {
-          // 台湾時間に+1時間足して、対応する日本時間Targetを生成
           const targetJst = new Date(now.getFullYear(), now.getMonth(), now.getDate(), twH + 1, twM, 0);
-          
-          // 日本時間の現在時刻(now)との差分(分)を計算
           const diffMin = Math.floor((targetJst - now) / 60000);
 
-          // 【確定データ：10分前通知】
           if (item.type === 'confirmed' && diffMin === 10) {
             const key = `${cat}-10m-${item.nextDay}-${item.nextTime}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
-              
-              let notifyMsg = "";
-              let speakMsg = "";
-
-              if (cat === 'ritual') {
-                notifyMsg = `${item.nextTime}：${item.nextLoc}で儀式始まります`;
-                speakMsg = `${item.nextLoc}で儀式が始まります`;
-              } else {
-                const name = categoryNames[cat];
-                notifyMsg = `${item.nextTime}：${name} ${item.nextLoc}にフィールドボスがわきます`;
-                speakMsg = `${name}の${item.nextLoc}にフィールドボスが湧きます`;
-              }
-
+              let notifyMsg = cat === 'ritual' ? 
+                `${item.nextTime}：${item.nextLoc}で儀式始まります` : 
+                `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc}にフィールドボスがわきます`;
+              let speakMsg = cat === 'ritual' ? 
+                `${item.nextLoc}で儀式が始まります` : 
+                `${categoryNames[cat]}の${item.nextLoc}にフィールドボスが湧きます`;
               notify('ブレソNeoタイマー', notifyMsg);
               speak(speakMsg);
             }
           }
 
-          // 【予想データ：5分前通知】
           if (item.type === 'estimated' && diffMin === 5) {
             const key = `${cat}-5m-${item.nextDay}-${item.nextTime}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
-
-              let notifyMsg = "";
-              let speakMsg = "";
-
-              if (cat === 'ritual') {
-                notifyMsg = `${item.nextTime}：${item.nextLoc}で儀式始まる可能性があります`;
-                speakMsg = `${item.nextLoc}で儀式が始まる可能性があります`;
-              } else {
-                const name = categoryNames[cat];
-                notifyMsg = `${item.nextTime}：${name} ${item.nextLoc}にフィールドボスが湧く可能性があります`;
-                speakMsg = `${name}の${item.nextLoc}にフィールドボスが湧く可能性があります`;
-              }
-
+              let notifyMsg = cat === 'ritual' ? 
+                `${item.nextTime}：${item.nextLoc}で儀式始まる可能性があります` : 
+                `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc}にフィールドボスが湧く可能性があります`;
+              let speakMsg = cat === 'ritual' ? 
+                `${item.nextLoc}で儀式が始まる可能性があります` : 
+                `${categoryNames[cat]}の${item.nextLoc}にフィールドボスが湧く可能性があります`;
               notify('ブレソNeoタイマー', notifyMsg);
               speak(speakMsg);
             }
@@ -348,14 +347,11 @@
         }
       });
 
-      // 3. ワールドボス（WB）チェック (台湾時間 15:00 / 21:00 ➔ 日本時間 16:00 / 22:00)
       if (document.getElementById('wbNotice').checked) {
         const isWeekend = (twDate.getDay() === 0 || twDate.getDay() === 6);
-        // 台湾時間での指定刻限: 平日 21:00 / 週末 15:00, 21:00
         const twWbHours = isWeekend ? [15, 21] : [21];
 
         twWbHours.forEach(twTargetH => {
-          // 日本時間に変換するため +1時間
           const jstTargetH = twTargetH + 1;
           const targetJst = new Date(now.getFullYear(), now.getMonth(), now.getDate(), jstTargetH, 0, 0);
           const diffMin = Math.floor((targetJst - now) / 60000);
