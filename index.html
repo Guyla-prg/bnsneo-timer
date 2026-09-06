@@ -267,13 +267,13 @@
 
     const defaultPayload = { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' };
     
-    const store = {
+    let store = {
       ritual: [],
       hakusei: [],
       sengen: []
     };
 
-    let isLocalUpdating = false;
+    let isSyncing = false;
     let currentModalCategory = null;
     const alertedSet = new Set();
 
@@ -304,16 +304,23 @@
       return window.btoa(unescape(encodeURIComponent(str)));
     }
 
+    function b64_to_utf8(str) {
+      return decodeURIComponent(escape(window.atob(str)));
+    }
+
+    // GitHub API経由で確実に最新データを書き込む
     async function syncToGitHub() {
-      isLocalUpdating = true;
+      isSyncing = true;
       const token = getSyncToken();
       const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
+      
       try {
         const getRes = await fetch(url, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/vnd.github+json'
-          }
+          },
+          cache: 'no-store'
         });
         
         let sha = '';
@@ -341,14 +348,15 @@
 
         if (!putRes.ok) {
           const errDetail = await putRes.json();
-          console.error("GitHub Sync Error Detail:", errDetail);
+          console.error("GitHub Sync Error:", errDetail);
+          alert("GitHubへの同期に失敗しました: " + (errDetail.message || "エラー"));
         }
       } catch (err) {
         console.error("GitHub Sync Error:", err);
       } finally {
         setTimeout(() => {
-          isLocalUpdating = false;
-        }, 10000);
+          isSyncing = false;
+        }, 5000);
       }
     }
 
@@ -529,34 +537,42 @@
       }
     }
 
-    function fetchGitHubData() {
-      if (isLocalUpdating) return;
+    // GitHub APIからダイレクトに最新のRAWデータを読み込み（キャッシュ完全回避）
+    async function fetchGitHubData() {
+      if (isSyncing) return;
 
-      fetch('./data.json?t=' + new Date().getTime())
-        .then(response => {
-          if (response.ok) return response.json();
-          throw new Error('data.json Load Failed');
-        })
-        .then(data => {
-          if (isLocalUpdating) return;
+      const token = getSyncToken();
+      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=` + new Date().getTime();
 
-          ['ritual', 'hakusei', 'sengen'].forEach(cat => {
-            if (data[cat] && Array.isArray(data[cat])) {
-              store[cat] = data[cat];
-              localStorage.setItem(`list_${cat}`, JSON.stringify(store[cat]));
-            }
-            updateUI(cat);
-          });
-        })
-        .catch(() => {
-          ['ritual', 'hakusei', 'sengen'].forEach(cat => {
-            const localRaw = localStorage.getItem(`list_${cat}`);
-            if (localRaw !== null) {
-              store[cat] = JSON.parse(localRaw);
-            }
-            updateUI(cat);
-          });
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          },
+          cache: 'no-store'
         });
+
+        if (isSyncing) return;
+
+        if (response.ok) {
+          const resData = await response.json();
+          if (resData.content) {
+            const rawJson = b64_to_utf8(resData.content.replace(/\n/g, ''));
+            const parsedData = JSON.parse(rawJson);
+
+            ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+              if (parsedData[cat] && Array.isArray(parsedData[cat])) {
+                store[cat] = parsedData[cat];
+                localStorage.setItem(`list_${cat}`, JSON.stringify(store[cat]));
+              }
+              updateUI(cat);
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Fetch Data Error:", err);
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
