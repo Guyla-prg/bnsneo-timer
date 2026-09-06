@@ -33,7 +33,8 @@
     .btn-row { display: flex; gap: 6px; margin-top: 6px; }
     .btn-row button { margin: 0; flex: 1; font-weight: bold; cursor: pointer; border: none; }
     .btn-reg { background: #0288d1; }
-    .btn-edit-gh { background: #e65100 !important; margin-top: 8px; height: 32px; font-size: 13px; font-weight: bold; }
+    .btn-item-clear { background: #555 !important; }
+    .btn-reset { background: #c62828 !important; margin-top: 8px; height: 32px; font-size: 13px; font-weight: bold; }
     
     .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; background: #222; padding: 6px; border-radius: 6px; }
     .checkbox-container input { width: auto; height: auto; margin: 0; }
@@ -103,7 +104,8 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn-reg" onclick="registerData('ritual')">ローカル保存</button>
+        <button class="btn-reg" onclick="registerData('ritual')">登録</button>
+        <button class="btn-item-clear" onclick="clearSingleData('ritual')">儀式クリア</button>
       </div>
     </div>
   </div>
@@ -152,7 +154,8 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn-reg" onclick="registerData('hakusei')">ローカル保存</button>
+        <button class="btn-reg" onclick="registerData('hakusei')">登録</button>
+        <button class="btn-item-clear" onclick="clearSingleData('hakusei')">白青FBクリア</button>
       </div>
     </div>
   </div>
@@ -203,12 +206,13 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn-reg" onclick="registerData('sengen')">ローカル保存</button>
+        <button class="btn-reg" onclick="registerData('sengen')">登録</button>
+        <button class="btn-item-clear" onclick="clearSingleData('sengen')">仙幻FBクリア</button>
       </div>
     </div>
   </div>
 
-  <button class="btn-edit-gh" onclick="openGitHubData()">GitHubで共有データを編集する</button>
+  <button class="btn-reset" onclick="resetAllData()">画面の登録データを一括クリア</button>
 
   <script>
     const defaultPayload = { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' };
@@ -265,8 +269,24 @@
       updateUI(category, payload);
     }
 
-    function openGitHubData() {
-      window.open('https://github.com/Guyla-prg/bnsneo-timer/edit/main/data.json', '_blank');
+    function clearSingleData(category) {
+      const categoryLabels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+      if (!confirm(`${categoryLabels[category]}のデータをクリアしますか？`)) return;
+
+      const payload = { ...defaultPayload };
+      localStorage.removeItem(`timer_${category}`);
+      updateUI(category, payload);
+    }
+
+    function resetAllData() {
+      if (!confirm("画面上のすべての登録データを一括クリアしますか？")) return;
+
+      ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+        const payload = { ...defaultPayload };
+        localStorage.removeItem(`timer_${cat}`);
+        updateUI(cat, payload);
+      });
+      alertedSet.clear();
     }
 
     function updateUI(category, data) {
@@ -293,7 +313,6 @@
       }
     }
 
-    // GitHub上の data.json を読み込む関数（15秒ごとに自動更新）
     function fetchGitHubData() {
       fetch('./data.json?t=' + new Date().getTime())
         .then(response => {
@@ -308,7 +327,6 @@
           });
         })
         .catch(() => {
-          // data.jsonが見つからない場合はLocal Storageから読み込み
           ['ritual', 'hakusei', 'sengen'].forEach(cat => {
             const local = localStorage.getItem(`timer_${cat}`);
             updateUI(cat, local ? JSON.parse(local) : { ...defaultPayload });
@@ -318,7 +336,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       fetchGitHubData();
-      setInterval(fetchGitHubData, 15000); // 15秒おきに最新データチェック
+      setInterval(fetchGitHubData, 15000);
     });
 
     setInterval(() => {
