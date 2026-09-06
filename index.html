@@ -20,6 +20,7 @@
     select, input[type="time"], button { width: 100%; padding: 6px; margin-bottom: 6px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; }
     button { background: #0288d1; font-weight: bold; cursor: pointer; border: none; margin-top: 4px; color: #fff; }
     button:hover { opacity: 0.9; }
+    .btn-item-clear { background: #555 !important; margin-top: 2px; }
     .btn-reset { background: #c62828 !important; margin-top: 10px; }
     .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; background: #222; padding: 8px; border-radius: 6px; }
     .checkbox-container input { width: auto; margin: 0; }
@@ -81,6 +82,7 @@
         <option value="estimated">予想データ</option>
       </select>
       <button onclick="registerData('ritual')">登録</button>
+      <button class="btn-item-clear" onclick="clearSingleData('ritual')">儀式データをクリア</button>
     </div>
   </div>
 
@@ -116,6 +118,7 @@
         <option value="estimated">予想データ</option>
       </select>
       <button onclick="registerData('hakusei')">登録</button>
+      <button class="btn-item-clear" onclick="clearSingleData('hakusei')">白青FBデータをクリア</button>
     </div>
   </div>
 
@@ -153,6 +156,7 @@
         <option value="estimated">予想データ</option>
       </select>
       <button onclick="registerData('sengen')">登録</button>
+      <button class="btn-item-clear" onclick="clearSingleData('sengen')">仙幻FBデータをクリア</button>
     </div>
   </div>
 
@@ -236,12 +240,26 @@
       }
     }
 
+    // 単一項目リセット処理
+    function clearSingleData(category) {
+      const categoryLabels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+      if (!confirm(`${categoryLabels[category]}の登録データをクリアしますか？`)) return;
+
+      const payload = { ...defaultPayload };
+      if (db) {
+        db.ref(`timers/${category}`).set(payload);
+      } else {
+        localStorage.removeItem(`timer_${category}`);
+        updateUI(category, payload);
+      }
+    }
+
     // 全データ一括リセット処理
     function resetAllData() {
       if (!confirm("すべてのタイマー登録データを初期化しますか？")) return;
 
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
-        const payload = { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' };
+        const payload = { ...defaultPayload };
         if (db) {
           db.ref(`timers/${cat}`).set(payload);
         } else {
