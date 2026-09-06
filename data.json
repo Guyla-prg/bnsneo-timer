@@ -1,6 +1,15 @@
 {
   "ritual": [
     {
+      "id": 1788734535898,
+      "prevTime": "(日) 22:32",
+      "prevLoc": "染坊",
+      "nextDay": "月",
+      "nextTime": "06:40",
+      "nextLoc": "雪原",
+      "type": "confirmed"
+    },
+    {
       "id": 1788705311575,
       "prevTime": "(日) 22:32",
       "prevLoc": "染坊",
