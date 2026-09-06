@@ -33,16 +33,11 @@
     .btn-row { display: flex; gap: 6px; margin-top: 6px; }
     .btn-row button { margin: 0; flex: 1; font-weight: bold; cursor: pointer; border: none; }
     .btn-reg { background: #0288d1; }
-    .btn-item-clear { background: #555 !important; }
-    .btn-reset { background: #c62828 !important; margin-top: 6px; height: 32px; font-size: 13px; }
+    .btn-edit-gh { background: #e65100 !important; margin-top: 8px; height: 32px; font-size: 13px; font-weight: bold; }
     
     .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; background: #222; padding: 6px; border-radius: 6px; }
     .checkbox-container input { width: auto; height: auto; margin: 0; }
   </style>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -108,8 +103,7 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn-reg" onclick="registerData('ritual')">登録</button>
-        <button class="btn-item-clear" onclick="clearSingleData('ritual')">儀式データクリア</button>
+        <button class="btn-reg" onclick="registerData('ritual')">ローカル保存</button>
       </div>
     </div>
   </div>
@@ -158,8 +152,7 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn-reg" onclick="registerData('hakusei')">登録</button>
-        <button class="btn-item-clear" onclick="clearSingleData('hakusei')">白青FBデータクリア</button>
+        <button class="btn-reg" onclick="registerData('hakusei')">ローカル保存</button>
       </div>
     </div>
   </div>
@@ -210,33 +203,14 @@
         </div>
       </div>
       <div class="btn-row">
-        <button class="btn-reg" onclick="registerData('sengen')">登録</button>
-        <button class="btn-item-clear" onclick="clearSingleData('sengen')">仙幻FBデータクリア</button>
+        <button class="btn-reg" onclick="registerData('sengen')">ローカル保存</button>
       </div>
     </div>
   </div>
 
-  <button class="btn-reset" onclick="resetAllData()">全登録データを一括クリア</button>
+  <button class="btn-edit-gh" onclick="openGitHubData()">GitHubで共有データを編集する</button>
 
   <script>
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-
-    let db = null;
-    try {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-    } catch(e) {
-      console.log("Firebase未設定のためローカルモード動作");
-    }
-
     const defaultPayload = { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' };
     const appData = {
       ritual: { ...defaultPayload },
@@ -287,41 +261,12 @@
         type: typeVal
       };
 
-      if (db) {
-        db.ref(`timers/${category}`).set(payload);
-      } else {
-        localStorage.setItem(`timer_${category}`, JSON.stringify(payload));
-        updateUI(category, payload);
-      }
+      localStorage.setItem(`timer_${category}`, JSON.stringify(payload));
+      updateUI(category, payload);
     }
 
-    function clearSingleData(category) {
-      const categoryLabels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
-      if (!confirm(`${categoryLabels[category]}の登録データをクリアしますか？`)) return;
-
-      const payload = { ...defaultPayload };
-      if (db) {
-        db.ref(`timers/${category}`).set(payload);
-      } else {
-        localStorage.removeItem(`timer_${category}`);
-        updateUI(category, payload);
-      }
-    }
-
-    function resetAllData() {
-      if (!confirm("すべてのタイマー登録データを初期化しますか？")) return;
-
-      ['ritual', 'hakusei', 'sengen'].forEach(cat => {
-        const payload = { ...defaultPayload };
-        if (db) {
-          db.ref(`timers/${cat}`).set(payload);
-        } else {
-          localStorage.removeItem(`timer_${cat}`);
-          updateUI(cat, payload);
-        }
-      });
-      alertedSet.clear();
-      alert("データを一括クリアしました");
+    function openGitHubData() {
+      window.open('https://github.com/Guyla-prg/bnsneo-timer/edit/main/data.json', '_blank');
     }
 
     function updateUI(category, data) {
@@ -348,19 +293,33 @@
       }
     }
 
-    if (db) {
-      ['ritual', 'hakusei', 'sengen'].forEach(category => {
-        db.ref(`timers/${category}`).on('value', (snapshot) => {
-          const val = snapshot.val();
-          updateUI(category, val || { ...defaultPayload });
+    // GitHub上の data.json を読み込む関数（15秒ごとに自動更新）
+    function fetchGitHubData() {
+      fetch('./data.json?t=' + new Date().getTime())
+        .then(response => {
+          if (response.ok) return response.json();
+          throw new Error('data.json Load Failed');
+        })
+        .then(data => {
+          ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+            if (data[cat]) {
+              updateUI(cat, data[cat]);
+            }
+          });
+        })
+        .catch(() => {
+          // data.jsonが見つからない場合はLocal Storageから読み込み
+          ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+            const local = localStorage.getItem(`timer_${cat}`);
+            updateUI(cat, local ? JSON.parse(local) : { ...defaultPayload });
+          });
         });
-      });
-    } else {
-      ['ritual', 'hakusei', 'sengen'].forEach(category => {
-        const local = localStorage.getItem(`timer_${category}`);
-        updateUI(category, local ? JSON.parse(local) : { ...defaultPayload });
-      });
     }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchGitHubData();
+      setInterval(fetchGitHubData, 15000); // 15秒おきに最新データチェック
+    });
 
     setInterval(() => {
       const now = new Date();
