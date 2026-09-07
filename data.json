@@ -39,6 +39,15 @@
   ],
   "hakusei": [
     {
+      "id": 1788752087046,
+      "prevTime": "(月) 11:28",
+      "prevLoc": "平原",
+      "nextDay": "月",
+      "nextTime": "07:01",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
       "id": 1788752015768,
       "prevTime": "(月) 05:25",
       "prevLoc": "樹林",
