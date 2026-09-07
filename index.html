@@ -269,7 +269,7 @@
       tkParts: ['ghp_', 'agd1aaoDng8n0B03', 'eMYvV0VWQy5S7y19PIS8']
     };
 
-    const defaultPayload = { prevTime: '', prevLoc: '', nextDay: '', nextTime: '', nextLoc: '', type: 'confirmed' };
+    const dayMap = { '日': 0, '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6 };
     
     let store = {
       ritual: [],
@@ -283,6 +283,29 @@
 
     function getSyncToken() {
       return GITHUB_CONFIG.tkParts.join('');
+    }
+
+    function getTwDate() {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      return new Date(utc + (3600000 * 8));
+    }
+
+    function getItemDate(item, refTwDate) {
+      if (!item || !item.nextDay || !item.nextTime) return null;
+      const targetDayNum = dayMap[item.nextDay];
+      const [h, m] = item.nextTime.split(':').map(Number);
+      if (isNaN(targetDayNum) || isNaN(h) || isNaN(m)) return null;
+
+      const currentDayNum = refTwDate.getDay();
+      let diffDays = targetDayNum - currentDayNum;
+      
+      const itemDate = new Date(refTwDate.getFullYear(), refTwDate.getMonth(), refTwDate.getDate() + diffDays, h, m, 0);
+
+      if (diffDays < -3) itemDate.setDate(itemDate.getDate() + 7);
+      if (diffDays > 3) itemDate.setDate(itemDate.getDate() - 7);
+
+      return itemDate;
     }
 
     function speak(text) {
@@ -377,13 +400,8 @@
         locVal = '不明';
       }
 
-      const currentTop = store[category][0] || defaultPayload;
-      const prevText = currentTop.nextTime ? `(${currentTop.nextDay || ''}) ${currentTop.nextTime}` : '--:--';
-
       const newItem = {
         id: Date.now(),
-        prevTime: prevText,
-        prevLoc: currentTop.nextLoc || '--',
         nextDay: dayVal,
         nextTime: timeVal,
         nextLoc: locVal,
@@ -470,39 +488,54 @@
       syncToGitHub();
     }
 
-    function groupItemsByTime(list) {
-      const groups = [];
-      list.forEach(item => {
-        const key = `${item.nextDay}_${item.nextTime}`;
-        let group = groups.find(g => g.key === key);
-        if (group) {
-          if (!group.locations.includes(item.nextLoc)) {
-            group.locations.push(item.nextLoc);
-          }
-        } else {
-          groups.push({
-            key,
-            nextDay: item.nextDay,
-            nextTime: item.nextTime,
-            prevTime: item.prevTime,
-            prevLoc: item.prevLoc,
-            locations: [item.nextLoc],
-            type: item.type
-          });
-        }
-      });
-      return groups;
-    }
-
     function updateUI(category) {
       const list = store[category] || [];
+      const twDate = getTwDate();
 
+      // 当日・翌日（今日と明日）までの境界線を定義（24時間後）
+      const nextDayLimit = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate() + 2, 0, 0, 0);
+
+      const futureItems = [];
+      const pastItems = [];
+
+      list.forEach(item => {
+        const itemDate = getItemDate(item, twDate);
+        if (itemDate) {
+          if (itemDate.getTime() >= twDate.getTime()) {
+            // 「翌日まで」の未来データのみ「次の時間」の対象にする
+            if (itemDate.getTime() < nextDayLimit.getTime()) {
+              futureItems.push({ item, itemDate });
+            }
+          } else {
+            pastItems.push({ item, itemDate });
+          }
+        }
+      });
+
+      futureItems.sort((a, b) => a.itemDate.getTime() - b.itemDate.getTime());
+      pastItems.sort((a, b) => b.itemDate.getTime() - a.itemDate.getTime());
+
+      // 「前回の時間場所」の表示更新
+      let prevText = '--:-- (未登録)';
+      if (pastItems.length > 0) {
+        if (category === 'ritual') {
+          const topPastDate = pastItems[0].itemDate;
+          const samePastGroup = pastItems.filter(p => p.itemDate.getTime() === topPastDate.getTime());
+          const locs = samePastGroup.map(p => p.item.nextLoc);
+          const locStr = locs.join('/');
+          const pItem = samePastGroup[0].item;
+          prevText = `(${pItem.nextDay}) ${pItem.nextTime} (${locStr})`;
+        } else {
+          const pItem = pastItems[0].item;
+          prevText = `(${pItem.nextDay}) ${pItem.nextTime} (${pItem.nextLoc})`;
+        }
+      }
+      document.getElementById(`prev-${category}`).innerText = prevText;
+
+      // 「次の時間」の表示更新
       if (category === 'ritual') {
-        const groups = groupItemsByTime(list);
         const container = document.getElementById('ritual-next-container');
-
-        if (groups.length === 0) {
-          document.getElementById('prev-ritual').innerText = '--:-- (未登録)';
+        if (futureItems.length === 0) {
           container.innerHTML = `
             <div class="info-group info-row">
               <div>次の時間：<span>--:--</span></div>
@@ -511,44 +544,47 @@
           return;
         }
 
-        const top = groups[0];
-        let prevLocs = top.prevLoc ? top.prevLoc.split(' / ') : [];
-        let prevLocStr = prevLocs.join('/');
-        document.getElementById('prev-ritual').innerText = `${top.prevTime || '--:--'} (${prevLocStr || '未登録'})`;
+        const topFutureDate = futureItems[0].itemDate;
+        const sameFutureGroup = futureItems.filter(f => f.itemDate.getTime() === topFutureDate.getTime());
+        const locs = sameFutureGroup.map(f => f.item.nextLoc);
+        const locStr = locs.join('/');
+        const fItem = sameFutureGroup[0].item;
 
-        // 直近の最新予定（1グループ分）のみを1行で表示
-        const dayDisplay = top.nextDay ? `(${top.nextDay}) ` : '';
-        const locStr = top.locations.join('/');
-        const label = top.type === 'confirmed' ? '確定' : '予想';
-        const badgeClass = top.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+        const dayDisplay = `(${fItem.nextDay}) `;
+        const label = fItem.type === 'confirmed' ? '確定' : '予想';
+        const badgeClass = fItem.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
 
         container.innerHTML = `
           <div class="info-group info-row">
-            <div>次の時間：<span>${dayDisplay}${top.nextTime}</span><span class="${badgeClass}">${label}</span></div>
+            <div>次の時間：<span>${dayDisplay}${fItem.nextTime}</span><span class="${badgeClass}">${label}</span></div>
             <div>場所：<span>${locStr}</span><span class="${badgeClass}">${label}</span></div>
           </div>`;
 
       } else {
-        const data = list[0] || defaultPayload;
-        document.getElementById(`prev-${category}`).innerText = `${data.prevTime || '--:--'} (${data.prevLoc || '未登録'})`;
-        
-        const dayDisplay = data.nextDay ? `(${data.nextDay}) ` : '';
-        document.getElementById(`next-time-${category}`).innerText = data.nextTime ? `${dayDisplay}${data.nextTime}` : '--:--';
-        document.getElementById(`next-loc-${category}`).innerText = data.nextLoc || '--';
-
+        const timeSpan = document.getElementById(`next-time-${category}`);
+        const locSpan = document.getElementById(`next-loc-${category}`);
         const timeBadge = document.getElementById(`badge-time-${category}`);
         const locBadge = document.getElementById(`badge-loc-${category}`);
-        
-        if (data.nextTime) {
-          const label = data.type === 'confirmed' ? '確定' : '予想';
-          const className = data.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
-          timeBadge.innerText = label;
-          timeBadge.className = className;
-          locBadge.innerText = label;
-          locBadge.className = className;
-        } else {
+
+        if (futureItems.length === 0) {
+          timeSpan.innerText = '--:--';
+          locSpan.innerText = '--';
           timeBadge.innerText = '';
+          timeBadge.className = 'status-badge';
           locBadge.innerText = '';
+          locBadge.className = 'status-badge';
+        } else {
+          const fItem = futureItems[0].item;
+          timeSpan.innerText = `(${fItem.nextDay}) ${fItem.nextTime}`;
+          locSpan.innerText = fItem.nextLoc;
+
+          const label = fItem.type === 'confirmed' ? '確定' : '予想';
+          const badgeClass = fItem.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+
+          timeBadge.innerText = label;
+          timeBadge.className = badgeClass;
+          locBadge.innerText = label;
+          locBadge.className = badgeClass;
         }
       }
     }
@@ -596,19 +632,17 @@
     });
 
     setInterval(() => {
-      const now = new Date();
-
-      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-      const twDate = new Date(utc + (3600000 * 8));
+      const twDate = getTwDate();
       const twTimeStr = String(twDate.getHours()).padStart(2, '0') + ':' +
                         String(twDate.getMinutes()).padStart(2, '0') + ':' +
                         String(twDate.getSeconds()).padStart(2, '0');
       document.getElementById('tw-clock').innerText = twTimeStr;
 
-      const dayMap = { '日': 0, '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6 };
       const categoryNames = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
 
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+        updateUI(cat);
+
         const list = store[cat] || [];
         
         list.forEach(item => {
