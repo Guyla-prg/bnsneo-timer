@@ -516,20 +516,17 @@
         let prevLocStr = prevLocs.join('/');
         document.getElementById('prev-ritual').innerText = `${top.prevTime || '--:--'} (${prevLocStr || '未登録'})`;
 
-        let html = '';
-        groups.slice(0, 2).forEach(g => {
-          const dayDisplay = g.nextDay ? `(${g.nextDay}) ` : '';
-          const locStr = g.locations.join('/');
-          const label = g.type === 'confirmed' ? '確定' : '予想';
-          const badgeClass = g.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+        // 直近の最新予定（1グループ分）のみを1行で表示
+        const dayDisplay = top.nextDay ? `(${top.nextDay}) ` : '';
+        const locStr = top.locations.join('/');
+        const label = top.type === 'confirmed' ? '確定' : '予想';
+        const badgeClass = top.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
 
-          html += `
-            <div class="info-group info-row">
-              <div>次の時間：<span>${dayDisplay}${g.nextTime}</span><span class="${badgeClass}">${label}</span></div>
-              <div>場所：<span>${locStr}</span><span class="${badgeClass}">${label}</span></div>
-            </div>`;
-        });
-        container.innerHTML = html;
+        container.innerHTML = `
+          <div class="info-group info-row">
+            <div>次の時間：<span>${dayDisplay}${top.nextTime}</span><span class="${badgeClass}">${label}</span></div>
+            <div>場所：<span>${locStr}</span><span class="${badgeClass}">${label}</span></div>
+          </div>`;
 
       } else {
         const data = list[0] || defaultPayload;
