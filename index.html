@@ -317,6 +317,15 @@
       }
     }
 
+    // 音声ファイルを再生する関数（再生失敗時は自動的に音声読み上げにフォールバック）
+    function playAudioFile(filePath, fallbackText) {
+      const audio = new Audio(filePath);
+      audio.play().catch(err => {
+        console.warn("Audio play blocked/failed, falling back to speech:", err);
+        if (fallbackText) speak(fallbackText);
+      });
+    }
+
     function notify(title, body) {
       if (Notification.permission === 'granted') {
         new Notification(title, { body });
@@ -492,7 +501,6 @@
       const list = store[category] || [];
       const twDate = getTwDate();
 
-      // 当日・翌日（今日と明日）までの境界線を定義（24時間後）
       const nextDayLimit = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate() + 2, 0, 0, 0);
 
       const futureItems = [];
@@ -502,7 +510,6 @@
         const itemDate = getItemDate(item, twDate);
         if (itemDate) {
           if (itemDate.getTime() >= twDate.getTime()) {
-            // 「翌日まで」の未来データのみ「次の時間」の対象にする
             if (itemDate.getTime() < nextDayLimit.getTime()) {
               futureItems.push({ item, itemDate });
             }
@@ -515,7 +522,6 @@
       futureItems.sort((a, b) => a.itemDate.getTime() - b.itemDate.getTime());
       pastItems.sort((a, b) => b.itemDate.getTime() - a.itemDate.getTime());
 
-      // 「前回の時間場所」の表示更新
       let prevText = '--:-- (未登録)';
       if (pastItems.length > 0) {
         if (category === 'ritual') {
@@ -532,7 +538,6 @@
       }
       document.getElementById(`prev-${category}`).innerText = prevText;
 
-      // 「次の時間」の表示更新
       if (category === 'ritual') {
         const container = document.getElementById('ritual-next-container');
         if (futureItems.length === 0) {
@@ -724,23 +729,25 @@
           const targetTwDate = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate(), twTargetH, 0, 0);
           const diffSec = Math.floor((targetTwDate.getTime() - twDate.getTime()) / 1000);
 
+          // 10分前（585〜615秒）
           if (diffSec >= 585 && diffSec <= 615) {
             const key = `wb-${twTargetH}-10m-${twDate.getDate()}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
               const msg = `ワールドボス10分前です`;
               notify('ワールドボス通知', msg);
-              speak(msg);
+              playAudioFile('World Boss in 10 minutes..mp3', msg);
             }
           }
 
+          // 5分前（285〜315秒）
           if (diffSec >= 285 && diffSec <= 315) {
             const key = `wb-${twTargetH}-5m-${twDate.getDate()}`;
             if (!alertedSet.has(key)) {
               alertedSet.add(key);
               const msg = `ワールドボス5分前です`;
               notify('ワールドボス通知', msg);
-              speak(msg);
+              playAudioFile('World Boss in 5 minutes..mp3', msg);
             }
           }
         });
