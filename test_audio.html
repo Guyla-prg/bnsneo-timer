@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WB音声テスト再生</title>
+  <style>
+    body { font-family: sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 20px; max-width: 480px; margin: 0 auto; text-align: center; }
+    h1 { font-size: 18px; color: #00ffcc; margin-bottom: 20px; }
+    .box { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+    .btn { background: #00897b; color: #fff; border: none; border-radius: 4px; padding: 10px 16px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 8px; }
+    .btn:hover { background: #00bfa5; }
+    .status { font-size: 12px; color: #aaa; margin-top: 6px; min-height: 18px; }
+  </style>
+</head>
+<body>
+
+  <h1>🔊 WB音声テスト再生</h1>
+
+  <div class="box">
+    <div style="font-weight: bold; font-size: 15px;">10分前 アナウンス</div>
+    <button class="btn" onclick="playTest('World Boss in 10 minutes..mp3', 'status-10m')">▶ 10分前音声を再生</button>
+    <div id="status-10m" class="status"></div>
+  </div>
+
+  <div class="box">
+    <div style="font-weight: bold; font-size: 15px;">5分前 アナウンス</div>
+    <button class="btn" onclick="playTest('World Boss in 5 minutes..mp3', 'status-5m')">▶ 5分前音声を再生</button>
+    <div id="status-5m" class="status"></div>
+  </div>
+
+  <script>
+    function playTest(fileName, statusId) {
+      const statusEl = document.getElementById(statusId);
+      statusEl.style.color = '#00ffcc';
+      statusEl.innerText = '再生中...';
+
+      const audio = new Audio(fileName);
+      audio.play().then(() => {
+        audio.onended = () => {
+          statusEl.style.color = '#aaa';
+          statusEl.innerText = '再生終了';
+        };
+      }).catch(err => {
+        console.error(err);
+        statusEl.style.color = '#ff5252';
+        statusEl.innerText = '再生失敗（ファイル名またはパスを確認してください）';
+      });
+    }
+  </script>
+</body>
+</html>
