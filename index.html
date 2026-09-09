@@ -45,7 +45,7 @@
     .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; background: #222; padding: 6px; border-radius: 6px; }
     .checkbox-container input { width: auto; height: auto; margin: 0; }
 
-    /* モーダル表示スタイリング（手動リサイズ完全対応版） */
+    /* モーダル表示スタイリング */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
     .modal-content { 
       background: #1e1e1e; 
@@ -64,7 +64,6 @@
     .modal-title { font-size: 14px; font-weight: bold; color: #00ffcc; }
     .modal-close { background: #444; border: none; color: #fff; border-radius: 4px; padding: 2px 10px; cursor: pointer; font-size: 12px; width: auto; height: 26px; }
     
-    /* リスト部分に独立したスクロール領域を設定 */
     #modalListContainer {
       overflow-y: auto;
       max-height: 60vh;
@@ -426,6 +425,18 @@
         locVal = '不明';
       }
 
+      // 【重複チェック】同じ（曜日・時間・場所）が既に存在する場合は警告して処理を中断
+      const isDuplicate = store[category].some(item => 
+        item.nextDay === dayVal && 
+        item.nextTime === timeVal && 
+        item.nextLoc === locVal
+      );
+
+      if (isDuplicate) {
+        alert("すでに同じ（曜日・時間・場所）のデータが登録されています");
+        return;
+      }
+
       const newItem = {
         id: Date.now(),
         nextDay: dayVal,
@@ -437,6 +448,10 @@
       store[category].unshift(newItem);
       localStorage.setItem(`list_${category}`, JSON.stringify(store[category]));
       updateUI(category);
+      
+      // 登録完了後に時間入力欄のみクリア（連打・重複防止）
+      document.getElementById(`input-time-${category}`).value = '';
+
       syncToGitHub();
     }
 
