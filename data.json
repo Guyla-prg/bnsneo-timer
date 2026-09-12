@@ -363,6 +363,13 @@
   ],
   "sengen": [
     {
+      "id": 1789209867969,
+      "nextDay": "土",
+      "nextTime": "18:44",
+      "nextLoc": "力王",
+      "type": "confirmed"
+    },
+    {
       "id": 1789204227934,
       "nextDay": "土",
       "nextTime": "17:10",
