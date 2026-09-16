@@ -323,6 +323,13 @@
   ],
   "hakusei": [
     {
+      "id": 1789534449882,
+      "nextDay": "金",
+      "nextTime": "21:51",
+      "nextLoc": "樹林",
+      "type": "confirmed"
+    },
+    {
       "id": 1789534425360,
       "nextDay": "金",
       "nextTime": "20:17",
