@@ -11,6 +11,13 @@
   "hakusei": [],
   "sengen": [
     {
+      "id": 1789552675504,
+      "nextDay": "月",
+      "nextTime": "18:57",
+      "nextLoc": "力王",
+      "type": "confirmed"
+    },
+    {
       "id": 1789543528998,
       "nextDay": "水",
       "nextTime": "14:58",
