@@ -9,5 +9,13 @@
     }
   ],
   "hakusei": [],
-  "sengen": []
+  "sengen": [
+    {
+      "id": 1789543528998,
+      "nextDay": "水",
+      "nextTime": "14:58",
+      "nextLoc": "荒野",
+      "type": "confirmed"
+    }
+  ]
 }
