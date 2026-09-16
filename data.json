@@ -15,7 +15,15 @@
       "type": "confirmed"
     }
   ],
-  "hakusei": [],
+  "hakusei": [
+    {
+      "id": 1789563956779,
+      "nextDay": "水",
+      "nextTime": "08:59",
+      "nextLoc": "樹林",
+      "type": "confirmed"
+    }
+  ],
   "sengen": [
     {
       "id": 1789563329283,
