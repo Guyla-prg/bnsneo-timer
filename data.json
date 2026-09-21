@@ -1,6 +1,13 @@
 {
   "ritual": [
     {
+      "id": 1790026627477,
+      "nextDay": "木",
+      "nextTime": "13:33",
+      "nextLoc": "雪原",
+      "type": "confirmed"
+    },
+    {
       "id": 1790026615939,
       "nextDay": "木",
       "nextTime": "11:10",
