@@ -103,6 +103,13 @@
   ],
   "sengen": [
     {
+      "id": 1790025451963,
+      "nextDay": "土",
+      "nextTime": "11:57",
+      "nextLoc": "山脈",
+      "type": "confirmed"
+    },
+    {
       "id": 1790025441247,
       "nextDay": "土",
       "nextTime": "10:31",
