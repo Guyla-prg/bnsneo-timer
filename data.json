@@ -1,5 +1,13 @@
 {
-  "ritual": [],
+  "ritual": [
+    {
+      "id": 1790470766167,
+      "nextDay": "日",
+      "nextTime": "08:48",
+      "nextLoc": "雪原",
+      "type": "confirmed"
+    }
+  ],
   "hakusei": [
     {
       "id": 1790465084659,
