@@ -8,29 +8,7 @@
       "type": "confirmed"
     }
   ],
-  "hakusei": [
-    {
-      "id": 1790474261199,
-      "nextDay": "日",
-      "nextTime": "09:54",
-      "nextLoc": "不明",
-      "type": "estimated"
-    },
-    {
-      "id": 1790383583780,
-      "nextDay": "土",
-      "nextTime": "08:41",
-      "nextLoc": "平原",
-      "type": "confirmed"
-    },
-    {
-      "id": 1790168227271,
-      "nextDay": "水",
-      "nextTime": "20:52",
-      "nextLoc": "平原",
-      "type": "confirmed"
-    }
-  ],
+  "hakusei": [],
   "sengen": [
     {
       "id": 1790766933947,
