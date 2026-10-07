@@ -8,36 +8,7 @@
       "type": "confirmed"
     }
   ],
-  "hakusei": [
-    {
-      "id": 1791298604091,
-      "nextDay": "火",
-      "nextTime": "22:20",
-      "nextLoc": "樹林",
-      "type": "confirmed"
-    },
-    {
-      "id": 1791163291507,
-      "nextDay": "月",
-      "nextTime": "09:44",
-      "nextLoc": "平原",
-      "type": "confirmed"
-    },
-    {
-      "id": 1791112333494,
-      "nextDay": "日",
-      "nextTime": "18:55",
-      "nextLoc": "樹林",
-      "type": "confirmed"
-    },
-    {
-      "id": 1790770543635,
-      "nextDay": "水",
-      "nextTime": "20:12",
-      "nextLoc": "樹林",
-      "type": "confirmed"
-    }
-  ],
+  "hakusei": [],
   "sengen": [
     {
       "id": 1791411317526,
