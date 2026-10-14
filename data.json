@@ -3,6 +3,13 @@
   "hakusei": [],
   "sengen": [
     {
+      "id": 1791982495837,
+      "nextDay": "水",
+      "nextTime": "20:20",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
       "id": 1791980466158,
       "nextDay": "水",
       "nextTime": "21:20",
