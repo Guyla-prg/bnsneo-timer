@@ -1,42 +1,6 @@
 {
   "ritual": [],
-  "hakusei": [
-    {
-      "id": 1792397522088,
-      "nextDay": "月",
-      "nextTime": "15:36",
-      "nextLoc": "平原",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792246099884,
-      "nextDay": "土",
-      "nextTime": "20:46",
-      "nextLoc": "平原",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792115813644,
-      "nextDay": "金",
-      "nextTime": "09:56",
-      "nextLoc": "平原",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792049338894,
-      "nextDay": "木",
-      "nextTime": "14:53",
-      "nextLoc": "樹林",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792010557428,
-      "nextDay": "木",
-      "nextTime": "04:37",
-      "nextLoc": "平原",
-      "type": "confirmed"
-    }
-  ],
+  "hakusei": [],
   "sengen": [
     {
       "id": 1792566006272,
