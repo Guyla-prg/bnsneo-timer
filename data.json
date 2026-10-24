@@ -32,6 +32,13 @@
   ],
   "sengen": [
     {
+      "id": 1792822807157,
+      "nextDay": "土",
+      "nextTime": "14:20",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
       "id": 1792817706196,
       "nextDay": "土",
       "nextTime": "12:55",
