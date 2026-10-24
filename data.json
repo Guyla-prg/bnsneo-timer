@@ -422,48 +422,6 @@
       "nextTime": "17:37",
       "nextLoc": "武神荒野",
       "type": "confirmed"
-    },
-    {
-      "id": 1792483688152,
-      "nextDay": "火",
-      "nextTime": "16:08",
-      "nextLoc": "力王山脈",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792478286389,
-      "nextDay": "火",
-      "nextTime": "14:38",
-      "nextLoc": "知性森林",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792472646792,
-      "nextDay": "火",
-      "nextTime": "13:04",
-      "nextLoc": "力王山脈",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792467366207,
-      "nextDay": "火",
-      "nextTime": "11:36",
-      "nextLoc": "力王山脈",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792462268118,
-      "nextDay": "火",
-      "nextTime": "10:11",
-      "nextLoc": "武神荒野",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792457356016,
-      "nextDay": "火",
-      "nextTime": "08:40",
-      "nextLoc": "武神荒野",
-      "type": "confirmed"
     }
   ]
 }
