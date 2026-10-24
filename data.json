@@ -597,20 +597,6 @@
       "nextTime": "00:01",
       "nextLoc": "力王山脈",
       "type": "confirmed"
-    },
-    {
-      "id": 1792229647447,
-      "nextDay": "土",
-      "nextTime": "17:34",
-      "nextLoc": "知性森林",
-      "type": "confirmed"
-    },
-    {
-      "id": 1792203444310,
-      "nextDay": "土",
-      "nextTime": "10:17",
-      "nextLoc": "知性森林",
-      "type": "confirmed"
     }
   ]
 }
