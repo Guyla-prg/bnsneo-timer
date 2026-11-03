@@ -55,7 +55,7 @@
       max-width: 440px; 
       max-height: 80vh; 
       display: flex;
-      flex-direction: column;
+      flex-direction: column; 
       padding: 12px; 
       box-sizing: border-box; 
       color: #fff; 
@@ -359,6 +359,84 @@
       return decodeURIComponent(escape(window.atob(str)));
     }
 
+    // GitHub上の特定ファイル（JSON）を取得
+    async function fetchGitHubFile(filePath) {
+      const token = getSyncToken();
+      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filePath}`;
+      try {
+        const res = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          },
+          cache: 'no-store'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return {
+            sha: data.sha,
+            content: b64_to_utf8(data.content.replace(/\n/g, ''))
+          };
+        }
+      } catch (e) {
+        console.warn(`File not found or failed to fetch: ${filePath}`);
+      }
+      return null;
+    }
+
+    // GitHub上の特定ファイル（JSON）を更新・新規作成
+    async function putGitHubFile(filePath, contentStr, message) {
+      const token = getSyncToken();
+      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filePath}`;
+      
+      const existing = await fetchGitHubFile(filePath);
+      const sha = existing ? existing.sha : '';
+
+      const bodyData = {
+        message: message,
+        content: utf8_to_b64(contentStr)
+      };
+      if (sha) bodyData.sha = sha;
+
+      await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bodyData)
+      });
+    }
+
+    // 【3世代バックアップ・ローテーション】
+    // 区分（ritual, hakusei, sengen, all）ごとに bk2->bk3, bk1->bk2, 最新->bk1 を実行
+    async function saveBackupRotation(prefix) {
+      const fileBk1 = `data_${prefix}_bk1.json`;
+      const fileBk2 = `data_${prefix}_bk2.json`;
+      const fileBk3 = `data_${prefix}_bk3.json`;
+
+      try {
+        // 1. bk2 を bk3 にローテーション
+        const bk2 = await fetchGitHubFile(fileBk2);
+        if (bk2 && bk2.content) {
+          await putGitHubFile(fileBk3, bk2.content, `Rotate ${prefix} backup 2 to 3`);
+        }
+
+        // 2. bk1 を bk2 にローテーション
+        const bk1 = await fetchGitHubFile(fileBk1);
+        if (bk1 && bk1.content) {
+          await putGitHubFile(fileBk2, bk1.content, `Rotate ${prefix} backup 1 to 2`);
+        }
+
+        // 3. クリア直前の最新データを bk1 に保存
+        const currentDataStr = JSON.stringify(store, null, 2);
+        await putGitHubFile(fileBk1, currentDataStr, `Save ${prefix} backup 1 (Before clear)`);
+      } catch (err) {
+        console.error(`Backup Rotation Error (${prefix}):`, err);
+      }
+    }
+
     async function syncToGitHub() {
       isSyncing = true;
       const token = getSyncToken();
@@ -424,7 +502,7 @@
         locVal = '不明';
       }
 
-      // 【重複チェック】同じ（曜日・時間・場所）が既に存在する場合は警告して処理を中断
+      // 重複チェック
       const isDuplicate = store[category].some(item => 
         item.nextDay === dayVal && 
         item.nextTime === timeVal && 
@@ -462,9 +540,12 @@
       syncToGitHub();
     }
 
-    function clearCategoryData(category) {
+    // 【個別クリア】：クリア直前に data_(区分名)_bk1〜3.json へ保存
+    async function clearCategoryData(category) {
       const labels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
-      if (!confirm(`「${labels[category]}」のデータを一括クリアしますか？`)) return;
+      if (!confirm(`「${labels[category]}」のデータを一括クリアしますか？\n（クリア前の状態は data_${category}_bk1.json に保存されます）`)) return;
+
+      await saveBackupRotation(category);
 
       store[category] = [];
       localStorage.setItem(`list_${category}`, JSON.stringify([]));
@@ -515,8 +596,11 @@
       container.innerHTML = html;
     }
 
-    function resetAllData() {
-      if (!confirm("画面上のすべての登録データを一括クリアしますか？")) return;
+    // 【一括クリア】：クリア直前に data_all_bk1〜3.json へ保存
+    async function resetAllData() {
+      if (!confirm("画面上のすべての登録データを一括クリアしますか？\n（クリア前の状態は data_all_bk1.json に保存されます）")) return;
+
+      await saveBackupRotation('all');
 
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
         store[cat] = [];
