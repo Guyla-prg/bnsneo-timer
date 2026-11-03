@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ブレソNeoタイマー</title>
+  <style>
+    body { font-family: sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 10px; max-width: 480px; margin: 0 auto; box-sizing: border-box; }
+    h1 { font-size: 18px; text-align: center; color: #00ffcc; margin: 0 0 5px 0; }
+    .clock-banner { text-align: center; font-size: 12px; color: #aaa; margin-bottom: 8px; background: #1a1a1a; padding: 4px; border-radius: 6px; border: 1px solid #333; }
+    .clock-banner span { color: #00ffcc; font-weight: bold; font-size: 14px; }
+    
+    .exe-link { text-align: center; margin-bottom: 8px; font-size: 11px; }
+    .exe-link a { color: #00ffcc; text-decoration: underline; font-weight: bold; }
+    .exe-link a:hover { color: #80ffe5; }
+
+    .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
+    .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 3px; margin-bottom: 6px; }
+    .card-title { font-size: 15px; font-weight: bold; color: #ffeb3b; }
+    .btn-list-open { background: #00897b; color: #fff; border: none; border-radius: 4px; padding: 2px 10px; font-size: 11px; font-weight: bold; cursor: pointer; width: auto; height: 24px; }
+    
+    .info-group { margin-bottom: 4px; font-size: 13px; }
+    .info-row { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+    .info-row div { flex: 1; }
+    
+    .status-badge { display: inline-block; padding: 1px 4px; border-radius: 3px; font-size: 10px; margin-left: 3px; }
+    .status-confirmed { background: #2e7d32; color: #fff; }
+    .status-estimated { background: #f57f17; color: #fff; }
+    
+    .form-group { background: #2a2a2a; padding: 6px; border-radius: 6px; margin-top: 6px; }
+    .form-title { font-size: 11px; font-weight: bold; margin-bottom: 4px; color: #bbb; }
+    
+    .grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+    .field-unit { display: flex; flex-direction: column; }
+    
+    label { font-size: 10px; color: #aaa; margin-bottom: 1px; }
+    select, input[type="time"] { width: 100%; padding: 4px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; font-size: 12px; height: 28px; }
+    
+    .btn-row { display: flex; gap: 6px; margin-top: 6px; }
+    .btn-row button { margin: 0; flex: 1; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; height: 28px; font-size: 12px; }
+    .btn-reg { background: #0288d1; color: #fff; }
+    .btn-cat-clear { background: #d32f2f; color: #fff; }
+    .btn-reset { background: #b71c1c !important; color: #fff; margin-top: 8px; height: 32px; font-size: 13px; font-weight: bold; width: 100%; border-radius: 4px; border: none; cursor: pointer; }
+    
+    .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; background: #222; padding: 6px; border-radius: 6px; }
+    .checkbox-container input { width: auto; height: auto; margin: 0; }
+
+    /* モーダル表示スタイリング */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-content { 
+      background: #1e1e1e; 
+      border: 1px solid #555; 
+      border-radius: 8px; 
+      width: 90%; 
+      max-width: 440px; 
+      max-height: 80vh; 
+      display: flex;
+      flex-direction: column; 
+      padding: 12px; 
+      box-sizing: border-box; 
+      color: #fff; 
+    }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 6px; margin-bottom: 10px; flex-shrink: 0; }
+    .modal-title { font-size: 14px; font-weight: bold; color: #00ffcc; }
+    .modal-close { background: #444; border: none; color: #fff; border-radius: 4px; padding: 2px 10px; cursor: pointer; font-size: 12px; width: auto; height: 26px; }
+    
+    #modalListContainer {
+      overflow-y: auto;
+      max-height: 60vh;
+    }
+
+    .modal-list-item { display: flex; justify-content: space-between; align-items: center; background: #2a2a2a; padding: 6px 8px; border-radius: 4px; margin-bottom: 6px; font-size: 12px; }
+    .modal-list-item .item-info { display: flex; gap: 8px; align-items: center; }
+    .btn-delete-single { background: #d32f2f; color: #fff; border: none; border-radius: 3px; padding: 2px 8px; font-size: 11px; cursor: pointer; width: auto; height: 24px; }
+    .no-data { text-align: center; color: #888; font-size: 12px; padding: 10px 0; }
+  </style>
+</head>
+<body>
+
+  <h1>ブレソNeoタイマー</h1>
+  
+  <div class="exe-link">
+    <a href="https://github.com/Guyla-prg/bnsneo-timer/releases/latest" target="_blank">
+      💻 PC用デスクトップアプリ（Exe版）のダウンロードはこちら
+    </a>
+  </div>
+
+  <div class="clock-banner">
+    現在時刻 [台湾時間 (UTC+8)]: <span id="tw-clock">00:00:00</span>
+  </div>
+
+  <div class="checkbox-container">
+    <input type="checkbox" id="wbNotice" checked>
+    <label for="wbNotice" style="margin:0; font-size:12px; color:#e0e0e0;">WB通知 (平日 21:00 / 週末 15:00, 21:00 [台湾時間])</label>
+  </div>
+
+  <!-- 儀式エリア -->
+  <div class="card" id="card-ritual">
+    <div class="card-header">
+      <div class="card-title">儀式</div>
+      <button class="btn-list-open" onclick="openModal('ritual')">リスト</button>
+    </div>
+    <div class="info-group">前回の時間場所：<span id="prev-ritual">--:-- (未登録)</span></div>
+    
+    <div id="ritual-next-container">
+      <div class="info-group info-row">
+        <div>次の時間：<span id="next-time-ritual">--:--</span><span id="badge-time-ritual" class="status-badge"></span></div>
+        <div>場所：<span id="next-loc-ritual">--</span><span id="badge-loc-ritual" class="status-badge"></span></div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <div class="form-title">儀式情報登録 (※台湾時間)</div>
+      <div class="grid-2col">
+        <div class="field-unit">
+          <label>曜日</label>
+          <select id="input-day-ritual">
+            <option value="月">月曜日</option>
+            <option value="火">火曜日</option>
+            <option value="水">水曜日</option>
+            <option value="木">木曜日</option>
+            <option value="金">金曜日</option>
+            <option value="土">土曜日</option>
+            <option value="日">日曜日</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>時間</label>
+          <input type="time" id="input-time-ritual">
+        </div>
+        <div class="field-unit">
+          <label>場所</label>
+          <select id="input-loc-ritual">
+            <option value="孤独">孤独</option>
+            <option value="海岸">海岸</option>
+            <option value="鬼都">鬼都</option>
+            <option value="灰狼">灰狼</option>
+            <option value="土門">土門</option>
+            <option value="黒森">黒森</option>
+            <option value="悲鳴">悲鳴</option>
+            <option value="染坊">染坊</option>
+            <option value="雪原">雪原</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>種別</label>
+          <select id="input-type-ritual">
+            <option value="confirmed">確定データ</option>
+            <option value="estimated">予想データ</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-reg" onclick="registerData('ritual')">登録</button>
+        <button class="btn-cat-clear" onclick="clearCategoryData('ritual')">儀式をクリア</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 白青FBエリア -->
+  <div class="card" id="card-hakusei">
+    <div class="card-header">
+      <div class="card-title">白青FB</div>
+      <button class="btn-list-open" onclick="openModal('hakusei')">リスト</button>
+    </div>
+    <div class="info-group">前回の時間場所：<span id="prev-hakusei">--:-- (未登録)</span></div>
+    <div class="info-group info-row">
+      <div>次の時間：<span id="next-time-hakusei">--:--</span><span id="badge-time-hakusei" class="status-badge"></span></div>
+      <div>場所：<span id="next-loc-hakusei">--</span><span id="badge-loc-hakusei" class="status-badge"></span></div>
+    </div>
+    
+    <div class="form-group">
+      <div class="form-title">白青FB情報登録 (※台湾時間)</div>
+      <div class="grid-2col">
+        <div class="field-unit">
+          <label>曜日</label>
+          <select id="input-day-hakusei">
+            <option value="月">月曜日</option>
+            <option value="火">火曜日</option>
+            <option value="水">水曜日</option>
+            <option value="木">木曜日</option>
+            <option value="金">金曜日</option>
+            <option value="土">土曜日</option>
+            <option value="日">日曜日</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>時間</label>
+          <input type="time" id="input-time-hakusei">
+        </div>
+        <div class="field-unit">
+          <label>場所</label>
+          <select id="input-loc-hakusei">
+            <option value="平原">平原</option>
+            <option value="樹林">樹林</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>種別</label>
+          <select id="input-type-hakusei">
+            <option value="confirmed">確定データ</option>
+            <option value="estimated">予想データ</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-reg" onclick="registerData('hakusei')">登録</button>
+        <button class="btn-cat-clear" onclick="clearCategoryData('hakusei')">白青FBをクリア</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 仙幻FBエリア -->
+  <div class="card" id="card-sengen">
+    <div class="card-header">
+      <div class="card-title">仙幻FB</div>
+      <button class="btn-list-open" onclick="openModal('sengen')">リスト</button>
+    </div>
+    <div class="info-group">前回の時間場所：<span id="prev-sengen">--:-- (未登録)</span></div>
+    <div class="info-group info-row">
+      <div>次の時間：<span id="next-time-sengen">--:--</span><span id="badge-time-sengen" class="status-badge"></span></div>
+      <div>場所：<span id="next-loc-sengen">--</span><span id="badge-loc-sengen" class="status-badge"></span></div>
+    </div>
+    
+    <div class="form-group">
+      <div class="form-title">仙幻FB情報登録 (※台湾時間)</div>
+      <div class="grid-2col">
+        <div class="field-unit">
+          <label>曜日</label>
+          <select id="input-day-sengen">
+            <option value="月">月曜日</option>
+            <option value="火">火曜日</option>
+            <option value="水">水曜日</option>
+            <option value="木">木曜日</option>
+            <option value="金">金曜日</option>
+            <option value="土">土曜日</option>
+            <option value="日">日曜日</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>時間</label>
+          <input type="time" id="input-time-sengen">
+        </div>
+        <div class="field-unit">
+          <label>場所</label>
+          <select id="input-loc-sengen">
+            <option value="力王山脈">力王山脈</option>
+            <option value="知性森林">知性森林</option>
+            <option value="武神荒野">武神荒野</option>
+          </select>
+        </div>
+        <div class="field-unit">
+          <label>種別</label>
+          <select id="input-type-sengen">
+            <option value="confirmed">確定データ</option>
+            <option value="estimated">予想データ</option>
+          </select>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-reg" onclick="registerData('sengen')">登録</button>
+        <button class="btn-cat-clear" onclick="clearCategoryData('sengen')">仙幻FBをクリア</button>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-reset" onclick="resetAllData()">すべての登録データを一括クリア</button>
+
+  <!-- リスト表示用モーダル画面 -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div id="modalTitle" class="modal-title">登録データリスト</div>
+        <button class="modal-close" onclick="closeModal()">閉じる</button>
+      </div>
+      <div id="modalListContainer"></div>
+    </div>
+  </div>
+
+  <script>
+    const GITHUB_CONFIG = {
+      owner: 'Guyla-prg',
+      repo: 'bnsneo-timer',
+      path: 'data.json',
+      tkParts: ['ghp_', 'agd1aaoDng8n0B03', 'eMYvV0VWQy5S7y19PIS8']
+    };
+
+    const dayMap = { '日': 0, '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6 };
+    
+    let store = {
+      ritual: [],
+      hakusei: [],
+      sengen: []
+    };
+
+    let isSyncing = false;
+    let currentModalCategory = null;
+    const alertedSet = new Set();
+
+    function getSyncToken() {
+      return GITHUB_CONFIG.tkParts.join('');
+    }
+
+    function getTwDate() {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      return new Date(utc + (3600000 * 8));
+    }
+
+    function getItemDate(item, refTwDate) {
+      if (!item || !item.nextDay || !item.nextTime) return null;
+      const targetDayNum = dayMap[item.nextDay];
+      const [h, m] = item.nextTime.split(':').map(Number);
+      if (isNaN(targetDayNum) || isNaN(h) || isNaN(m)) return null;
+
+      const currentDayNum = refTwDate.getDay();
+      let diffDays = targetDayNum - currentDayNum;
+      
+      const itemDate = new Date(refTwDate.getFullYear(), refTwDate.getMonth(), refTwDate.getDate() + diffDays, h, m, 0);
+
+      if (diffDays < -3) itemDate.setDate(itemDate.getDate() + 7);
+      if (diffDays > 3) itemDate.setDate(itemDate.getDate() - 7);
+
+      return itemDate;
+    }
+
+    function speak(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const uttr = new SpeechSynthesisUtterance(text);
+        uttr.lang = 'ja-JP';
+        window.speechSynthesis.speak(uttr);
+      }
+    }
+
+    function playAudioFile(filePath, fallbackText) {
+      const audio = new Audio(filePath);
+      audio.play().catch(err => {
+        console.warn("Audio play blocked/failed, falling back to speech:", err);
+        if (fallbackText) speak(fallbackText);
+      });
+    }
+
+    function notify(title, body) {
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body });
+      }
+    }
+
+    if ('Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    function utf8_to_b64(str) {
+      return window.btoa(unescape(encodeURIComponent(str)));
+    }
+
+    function b64_to_utf8(str) {
+      return decodeURIComponent(escape(window.atob(str)));
+    }
+
+    // GitHub上の特定ファイル（JSON）を取得
+    async function fetchGitHubFile(filePath) {
+      const token = getSyncToken();
+      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filePath}`;
+      try {
+        const res = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          },
+          cache: 'no-store'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return {
+            sha: data.sha,
+            content: b64_to_utf8(data.content.replace(/\n/g, ''))
+          };
+        }
+      } catch (e) {
+        console.warn(`File not found or failed to fetch: ${filePath}`);
+      }
+      return null;
+    }
+
+    // GitHub上の特定ファイル（JSON）を更新・新規作成
+    async function putGitHubFile(filePath, contentStr, message) {
+      const token = getSyncToken();
+      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filePath}`;
+      
+      const existing = await fetchGitHubFile(filePath);
+      const sha = existing ? existing.sha : '';
+
+      const bodyData = {
+        message: message,
+        content: utf8_to_b64(contentStr)
+      };
+      if (sha) bodyData.sha = sha;
+
+      await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bodyData)
+      });
+    }
+
+    // 【3世代バックアップ・ローテーション】
+    // 区分（ritual, hakusei, sengen, all）ごとに bk2->bk3, bk1->bk2, 最新->bk1 を実行
+    async function saveBackupRotation(prefix) {
+      const fileBk1 = `data_${prefix}_bk1.json`;
+      const fileBk2 = `data_${prefix}_bk2.json`;
+      const fileBk3 = `data_${prefix}_bk3.json`;
+
+      try {
+        // 1. bk2 を bk3 にローテーション
+        const bk2 = await fetchGitHubFile(fileBk2);
+        if (bk2 && bk2.content) {
+          await putGitHubFile(fileBk3, bk2.content, `Rotate ${prefix} backup 2 to 3`);
+        }
+
+        // 2. bk1 を bk2 にローテーション
+        const bk1 = await fetchGitHubFile(fileBk1);
+        if (bk1 && bk1.content) {
+          await putGitHubFile(fileBk2, bk1.content, `Rotate ${prefix} backup 1 to 2`);
+        }
+
+        // 3. クリア直前の最新データを bk1 に保存
+        const currentDataStr = JSON.stringify(store, null, 2);
+        await putGitHubFile(fileBk1, currentDataStr, `Save ${prefix} backup 1 (Before clear)`);
+      } catch (err) {
+        console.error(`Backup Rotation Error (${prefix}):`, err);
+      }
+    }
+
+    async function syncToGitHub() {
+      isSyncing = true;
+      const token = getSyncToken();
+      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}`;
+      
+      try {
+        const getRes = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          },
+          cache: 'no-store'
+        });
+        
+        let sha = '';
+        if (getRes.ok) {
+          const getData = await getRes.json();
+          sha = getData.sha;
+        }
+
+        const jsonContent = JSON.stringify(store, null, 2);
+        const bodyData = {
+          message: 'Update timer data via web UI',
+          content: utf8_to_b64(jsonContent)
+        };
+        if (sha) bodyData.sha = sha;
+
+        const putRes = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(bodyData)
+        });
+
+        if (!putRes.ok) {
+          const errDetail = await putRes.json();
+          console.error("GitHub Sync Error:", errDetail);
+        }
+      } catch (err) {
+        console.error("GitHub Sync Error:", err);
+      } finally {
+        setTimeout(() => {
+          isSyncing = false;
+        }, 5000);
+      }
+    }
+
+    function registerData(category) {
+      const dayVal = document.getElementById(`input-day-${category}`).value;
+      const timeVal = document.getElementById(`input-time-${category}`).value;
+      let locVal = document.getElementById(`input-loc-${category}`).value;
+      const typeVal = document.getElementById(`input-type-${category}`).value;
+
+      if (!timeVal) {
+        alert("出現時間を入力してください");
+        return;
+      }
+
+      if (typeVal === 'estimated') {
+        locVal = '不明';
+      }
+
+      // 重複チェック
+      const isDuplicate = store[category].some(item => 
+        item.nextDay === dayVal && 
+        item.nextTime === timeVal && 
+        item.nextLoc === locVal
+      );
+
+      if (isDuplicate) {
+        alert("すでに同じ（曜日・時間・場所）のデータが登録されています");
+        return;
+      }
+
+      const newItem = {
+        id: Date.now(),
+        nextDay: dayVal,
+        nextTime: timeVal,
+        nextLoc: locVal,
+        type: typeVal
+      };
+
+      store[category].unshift(newItem);
+      localStorage.setItem(`list_${category}`, JSON.stringify(store[category]));
+      updateUI(category);
+      
+      // 登録完了後に時間入力欄のみクリア（連打・重複防止）
+      document.getElementById(`input-time-${category}`).value = '';
+
+      syncToGitHub();
+    }
+
+    function deleteItem(category, id) {
+      store[category] = store[category].filter(item => item.id !== id);
+      localStorage.setItem(`list_${category}`, JSON.stringify(store[category]));
+      updateUI(category);
+      renderModalList(category);
+      syncToGitHub();
+    }
+
+    // 【個別クリア】：クリア直前に data_(区分名)_bk1〜3.json へ保存
+    async function clearCategoryData(category) {
+      const labels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+      if (!confirm(`「${labels[category]}」のデータを一括クリアしますか？\n（クリア前の状態は data_${category}_bk1.json に保存されます）`)) return;
+
+      await saveBackupRotation(category);
+
+      store[category] = [];
+      localStorage.setItem(`list_${category}`, JSON.stringify([]));
+      updateUI(category);
+      if (currentModalCategory === category) {
+        renderModalList(category);
+      }
+      syncToGitHub();
+    }
+
+    function openModal(category) {
+      currentModalCategory = category;
+      const labels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+      document.getElementById('modalTitle').innerText = `${labels[category]} 登録リスト`;
+      renderModalList(category);
+      document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').style.display = 'none';
+      currentModalCategory = null;
+    }
+
+    function renderModalList(category) {
+      const container = document.getElementById('modalListContainer');
+      const list = store[category] || [];
+
+      if (list.length === 0) {
+        container.innerHTML = '<div class="no-data">登録されているデータはありません</div>';
+        return;
+      }
+
+      let html = '';
+      list.forEach(item => {
+        const badgeLabel = item.type === 'confirmed' ? '確定' : '予想';
+        const badgeClass = item.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+        html += `
+          <div class="modal-list-item">
+            <div class="item-info">
+              <span>(${item.nextDay}) ${item.nextTime}</span>
+              <span>【${item.nextLoc}】</span>
+              <span class="${badgeClass}">${badgeLabel}</span>
+            </div>
+            <button class="btn-delete-single" onclick="deleteItem('${category}', ${item.id})">削除</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // 【一括クリア】：クリア直前に data_all_bk1〜3.json へ保存
+    async function resetAllData() {
+      if (!confirm("画面上のすべての登録データを一括クリアしますか？\n（クリア前の状態は data_all_bk1.json に保存されます）")) return;
+
+      await saveBackupRotation('all');
+
+      ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+        store[cat] = [];
+        localStorage.setItem(`list_${cat}`, JSON.stringify([]));
+      });
+      ['ritual', 'hakusei', 'sengen'].forEach(cat => updateUI(cat));
+      alertedSet.clear();
+      closeModal();
+      syncToGitHub();
+    }
+
+    function updateUI(category) {
+      const list = store[category] || [];
+      const twDate = getTwDate();
+
+      const nextDayLimit = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate() + 2, 0, 0, 0);
+
+      const futureItems = [];
+      const pastItems = [];
+
+      list.forEach(item => {
+        const itemDate = getItemDate(item, twDate);
+        if (itemDate) {
+          if (itemDate.getTime() >= twDate.getTime()) {
+            if (itemDate.getTime() < nextDayLimit.getTime()) {
+              futureItems.push({ item, itemDate });
+            }
+          } else {
+            pastItems.push({ item, itemDate });
+          }
+        }
+      });
+
+      futureItems.sort((a, b) => a.itemDate.getTime() - b.itemDate.getTime());
+      pastItems.sort((a, b) => b.itemDate.getTime() - a.itemDate.getTime());
+
+      let prevText = '--:-- (未登録)';
+      if (pastItems.length > 0) {
+        if (category === 'ritual') {
+          const topPastDate = pastItems[0].itemDate;
+          const samePastGroup = pastItems.filter(p => p.itemDate.getTime() === topPastDate.getTime());
+          const locs = samePastGroup.map(p => p.item.nextLoc);
+          const locStr = locs.join('/');
+          const pItem = samePastGroup[0].item;
+          prevText = `(${pItem.nextDay}) ${pItem.nextTime} (${locStr})`;
+        } else {
+          const pItem = pastItems[0].item;
+          prevText = `(${pItem.nextDay}) ${pItem.nextTime} (${pItem.nextLoc})`;
+        }
+      }
+      document.getElementById(`prev-${category}`).innerText = prevText;
+
+      if (category === 'ritual') {
+        const container = document.getElementById('ritual-next-container');
+        if (futureItems.length === 0) {
+          container.innerHTML = `
+            <div class="info-group info-row">
+              <div>次の時間：<span>--:--</span></div>
+              <div>場所：<span>--</span></div>
+            </div>`;
+          return;
+        }
+
+        const topFutureDate = futureItems[0].itemDate;
+        const sameFutureGroup = futureItems.filter(f => f.itemDate.getTime() === topFutureDate.getTime());
+        const locs = sameFutureGroup.map(f => f.item.nextLoc);
+        const locStr = locs.join('/');
+        const fItem = sameFutureGroup[0].item;
+
+        const dayDisplay = `(${fItem.nextDay}) `;
+        const label = fItem.type === 'confirmed' ? '確定' : '予想';
+        const badgeClass = fItem.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+
+        container.innerHTML = `
+          <div class="info-group info-row">
+            <div>次の時間：<span>${dayDisplay}${fItem.nextTime}</span><span class="${badgeClass}">${label}</span></div>
+            <div>場所：<span>${locStr}</span><span class="${badgeClass}">${label}</span></div>
+          </div>`;
+
+      } else {
+        const timeSpan = document.getElementById(`next-time-${category}`);
+        const locSpan = document.getElementById(`next-loc-${category}`);
+        const timeBadge = document.getElementById(`badge-time-${category}`);
+        const locBadge = document.getElementById(`badge-loc-${category}`);
+
+        if (futureItems.length === 0) {
+          timeSpan.innerText = '--:--';
+          locSpan.innerText = '--';
+          timeBadge.innerText = '';
+          timeBadge.className = 'status-badge';
+          locBadge.innerText = '';
+          locBadge.className = 'status-badge';
+        } else {
+          const fItem = futureItems[0].item;
+          timeSpan.innerText = `(${fItem.nextDay}) ${fItem.nextTime}`;
+          locSpan.innerText = fItem.nextLoc;
+
+          const label = fItem.type === 'confirmed' ? '確定' : '予想';
+          const badgeClass = fItem.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+
+          timeBadge.innerText = label;
+          timeBadge.className = badgeClass;
+          locBadge.innerText = label;
+          locBadge.className = badgeClass;
+        }
+      }
+    }
+
+    async function fetchGitHubData() {
+      if (isSyncing) return;
+
+      const token = getSyncToken();
+      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${GITHUB_CONFIG.path}?t=` + new Date().getTime();
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github+json'
+          },
+          cache: 'no-store'
+        });
+
+        if (isSyncing) return;
+
+        if (response.ok) {
+          const resData = await response.json();
+          if (resData.content) {
+            const rawJson = b64_to_utf8(resData.content.replace(/\n/g, ''));
+            const parsedData = JSON.parse(rawJson);
+
+            ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+              if (parsedData[cat] && Array.isArray(parsedData[cat])) {
+                store[cat] = parsedData[cat];
+                localStorage.setItem(`list_${cat}`, JSON.stringify(store[cat]));
+              }
+              updateUI(cat);
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Fetch Data Error:", err);
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      fetchGitHubData();
+      setInterval(fetchGitHubData, 15000);
+    });
+
+    setInterval(() => {
+      const twDate = getTwDate();
+      const twTimeStr = String(twDate.getHours()).padStart(2, '0') + ':' +
+                        String(twDate.getMinutes()).padStart(2, '0') + ':' +
+                        String(twDate.getSeconds()).padStart(2, '0');
+      document.getElementById('tw-clock').innerText = twTimeStr;
+
+      const categoryNames = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+
+      ['ritual', 'hakusei', 'sengen'].forEach(cat => {
+        updateUI(cat);
+
+        const list = store[cat] || [];
+        
+        list.forEach(item => {
+          if (!item || !item.nextTime || !item.nextDay) return;
+
+          const targetTwDayNum = dayMap[item.nextDay];
+          const [twH, twM] = item.nextTime.split(':').map(Number);
+          const currentTwDayNum = twDate.getDay();
+
+          if (targetTwDayNum === currentTwDayNum) {
+            const targetTwDate = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate(), twH, twM, 0);
+            const diffSec = Math.floor((targetTwDate.getTime() - twDate.getTime()) / 1000);
+
+            // 【5分前通知】（285秒〜315秒：5分前±15秒）
+            if (diffSec >= 285 && diffSec <= 315) {
+              const key = `${cat}-5m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
+              if (!alertedSet.has(key)) {
+                alertedSet.add(key);
+
+                const isEstimated = (item.type === 'estimated');
+
+                if (cat === 'ritual') {
+                  const notifyMsg = `${item.nextTime}：${item.nextLoc} で儀式が始まります`;
+                  const speakMsg = `${item.nextLoc} で儀式が開始される5分前です`;
+                  notify('ブレソNeoタイマー (儀式5分前)', notifyMsg);
+                  speak(speakMsg);
+                } else {
+                  let notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
+                  let speakMsg = `${categoryNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
+
+                  if (isEstimated) {
+                    notifyMsg = `${item.nextTime}：${categoryNames[cat]} 不明 に湧く可能性があります`;
+                    speakMsg = `${categoryNames[cat]}の 場所は不明 フィールドボスが湧くかもしれない 5分前です`;
+                  }
+
+                  notify('ブレソNeoタイマー (FB5分前)', notifyMsg);
+                  speak(speakMsg);
+                }
+              }
+            }
+
+            // 【ジャスト（0分前／予兆時刻）通知】（-15秒〜15秒）
+            if (diffSec >= -15 && diffSec <= 15) {
+              const key = `${cat}-0m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
+              if (!alertedSet.has(key)) {
+                alertedSet.add(key);
+
+                const isEstimated = (item.type === 'estimated');
+
+                if (cat === 'ritual') {
+                  const notifyMsg = `${item.nextTime}：${item.nextLoc} で儀式予兆の時間です`;
+                  const speakMsg = `${item.nextLoc} で儀式予兆の時間です`;
+                  notify('ブレソNeoタイマー (儀式予兆発生)', notifyMsg);
+                  speak(speakMsg);
+                } else {
+                  let notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
+                  let speakMsg = `${categoryNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
+
+                  if (isEstimated) {
+                    notifyMsg = `${item.nextTime}：${categoryNames[cat]} 不明 に予兆が発生する可能性があります`;
+                    speakMsg = `${categoryNames[cat]}の 場所は不明 フィールドボスの予兆が出るかもしれない時間です`;
+                  }
+
+                  notify('ブレソNeoタイマー (FB予兆発生)', notifyMsg);
+                  speak(speakMsg);
+                }
+              }
+            }
+          }
+        });
+      });
+
+      // ワールドボス（WB）通知：10分前 ＆ 5分前
+      if (document.getElementById('wbNotice').checked) {
+        const isWeekend = (twDate.getDay() === 0 || twDate.getDay() === 6);
+        const twWbHours = isWeekend ? [15, 21] : [21];
+
+        twWbHours.forEach(twTargetH => {
+          const targetTwDate = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate(), twTargetH, 0, 0);
+          const diffSec = Math.floor((targetTwDate.getTime() - twDate.getTime()) / 1000);
+
+          if (diffSec >= 585 && diffSec <= 615) {
+            const key = `wb-${twTargetH}-10m-${twDate.getDate()}`;
+            if (!alertedSet.has(key)) {
+              alertedSet.add(key);
+              const msg = `ワールドボス10分前です`;
+              notify('ワールドボス通知', msg);
+              playAudioFile('World Boss in 10 minutes..mp3', msg);
+            }
+          }
+
+          if (diffSec >= 285 && diffSec <= 315) {
+            const key = `wb-${twTargetH}-5m-${twDate.getDate()}`;
+            if (!alertedSet.has(key)) {
+              alertedSet.add(key);
+              const msg = `ワールドボス5分前です`;
+              notify('ワールドボス通知', msg);
+              playAudioFile('World Boss in 5 minutes..mp3', msg);
+            }
+          }
+        });
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
