@@ -164,9 +164,12 @@
       <button class="btn-list-open" onclick="openModal('hakusei')">リスト</button>
     </div>
     <div class="info-group">前回の時間場所：<span id="prev-hakusei">--:-- (未登録)</span></div>
-    <div class="info-group info-row">
-      <div>次の時間：<span id="next-time-hakusei">--:--</span><span id="badge-time-hakusei" class="status-badge"></span></div>
-      <div>場所：<span id="next-loc-hakusei">--</span><span id="badge-loc-hakusei" class="status-badge"></span></div>
+    
+    <div id="hakusei-next-container">
+      <div class="info-group info-row">
+        <div id="wrap-time-hakusei">次の時間：<span id="next-time-hakusei">--:--</span><span id="badge-time-hakusei" class="status-badge"></span></div>
+        <div id="wrap-loc-hakusei">場所：<span id="next-loc-hakusei">--</span><span id="badge-loc-hakusei" class="status-badge"></span></div>
+      </div>
     </div>
     
     <div class="form-group">
@@ -217,9 +220,12 @@
       <button class="btn-list-open" onclick="openModal('sengen')">リスト</button>
     </div>
     <div class="info-group">前回の時間場所：<span id="prev-sengen">--:-- (未登録)</span></div>
-    <div class="info-group info-row">
-      <div>次の時間：<span id="next-time-sengen">--:--</span><span id="badge-time-sengen" class="status-badge"></span></div>
-      <div>場所：<span id="next-loc-sengen">--</span><span id="badge-loc-sengen" class="status-badge"></span></div>
+    
+    <div id="sengen-next-container">
+      <div class="info-group info-row">
+        <div id="wrap-time-sengen">次の時間：<span id="next-time-sengen">--:--</span><span id="badge-time-sengen" class="status-badge"></span></div>
+        <div id="wrap-loc-sengen">場所：<span id="next-loc-sengen">--</span><span id="badge-loc-sengen" class="status-badge"></span></div>
+      </div>
     </div>
     
     <div class="form-group">
@@ -286,6 +292,7 @@
     };
 
     const dayMap = { '日': 0, '月': 1, '火': 2, '水': 3, '木': 4, '金': 5, '土': 6 };
+    const revDayMap = ['日', '月', '火', '水', '木', '金', '土'];
     
     let store = {
       ritual: [],
@@ -359,7 +366,6 @@
       return decodeURIComponent(escape(window.atob(str)));
     }
 
-    // GitHub上の特定ファイル（JSON）を取得
     async function fetchGitHubFile(filePath) {
       const token = getSyncToken();
       const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filePath}`;
@@ -384,7 +390,6 @@
       return null;
     }
 
-    // GitHub上の特定ファイル（JSON）を更新・新規作成
     async function putGitHubFile(filePath, contentStr, message) {
       const token = getSyncToken();
       const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${filePath}`;
@@ -409,27 +414,22 @@
       });
     }
 
-    // 【3世代バックアップ・ローテーション】
-    // 区分（ritual, hakusei, sengen, all）ごとに bk2->bk3, bk1->bk2, 最新->bk1 を実行
     async function saveBackupRotation(prefix) {
       const fileBk1 = `data_${prefix}_bk1.json`;
       const fileBk2 = `data_${prefix}_bk2.json`;
       const fileBk3 = `data_${prefix}_bk3.json`;
 
       try {
-        // 1. bk2 を bk3 にローテーション
         const bk2 = await fetchGitHubFile(fileBk2);
         if (bk2 && bk2.content) {
           await putGitHubFile(fileBk3, bk2.content, `Rotate ${prefix} backup 2 to 3`);
         }
 
-        // 2. bk1 を bk2 にローテーション
         const bk1 = await fetchGitHubFile(fileBk1);
         if (bk1 && bk1.content) {
           await putGitHubFile(fileBk2, bk1.content, `Rotate ${prefix} backup 1 to 2`);
         }
 
-        // 3. クリア直前の最新データを bk1 に保存
         const currentDataStr = JSON.stringify(store, null, 2);
         await putGitHubFile(fileBk1, currentDataStr, `Save ${prefix} backup 1 (Before clear)`);
       } catch (err) {
@@ -526,9 +526,7 @@
       localStorage.setItem(`list_${category}`, JSON.stringify(store[category]));
       updateUI(category);
       
-      // 登録完了後に時間入力欄のみクリア（連打・重複防止）
       document.getElementById(`input-time-${category}`).value = '';
-
       syncToGitHub();
     }
 
@@ -540,7 +538,6 @@
       syncToGitHub();
     }
 
-    // 【個別クリア】：クリア直前に data_(区分名)_bk1〜3.json へ保存
     async function clearCategoryData(category) {
       const labels = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
       if (!confirm(`「${labels[category]}」のデータを一括クリアしますか？\n（クリア前の状態は data_${category}_bk1.json に保存されます）`)) return;
@@ -596,7 +593,6 @@
       container.innerHTML = html;
     }
 
-    // 【一括クリア】：クリア直前に data_all_bk1〜3.json へ保存
     async function resetAllData() {
       if (!confirm("画面上のすべての登録データを一括クリアしますか？\n（クリア前の状態は data_all_bk1.json に保存されます）")) return;
 
@@ -638,10 +634,12 @@
       pastItems.sort((a, b) => b.itemDate.getTime() - a.itemDate.getTime());
 
       let prevText = '--:-- (未登録)';
+      let latestPastDate = null;
+
       if (pastItems.length > 0) {
+        latestPastDate = pastItems[0].itemDate;
         if (category === 'ritual') {
-          const topPastDate = pastItems[0].itemDate;
-          const samePastGroup = pastItems.filter(p => p.itemDate.getTime() === topPastDate.getTime());
+          const samePastGroup = pastItems.filter(p => p.itemDate.getTime() === latestPastDate.getTime());
           const locs = samePastGroup.map(p => p.item.nextLoc);
           const locStr = locs.join('/');
           const pItem = samePastGroup[0].item;
@@ -681,30 +679,63 @@
           </div>`;
 
       } else {
-        const timeSpan = document.getElementById(`next-time-${category}`);
+        // 白青FB または 仙幻FB の表示処理
+        const wrapTime = document.getElementById(`wrap-time-${category}`);
+        const wrapLoc = document.getElementById(`wrap-loc-${category}`);
         const locSpan = document.getElementById(`next-loc-${category}`);
-        const timeBadge = document.getElementById(`badge-time-${category}`);
         const locBadge = document.getElementById(`badge-loc-${category}`);
 
-        if (futureItems.length === 0) {
-          timeSpan.innerText = '--:--';
+        // 【判定ロジック】前回出現時刻から 80分〜100分（1時間20分〜1時間40分）の範囲内にある未来データを探す
+        let validFutureItem = null;
+        if (futureItems.length > 0) {
+          if (latestPastDate) {
+            const minAllowed = latestPastDate.getTime() + (80 * 60 * 1000);
+            const maxAllowed = latestPastDate.getTime() + (100 * 60 * 1000);
+            // 80分〜100分の周期内に収まっている直近データのみを有効とする
+            validFutureItem = futureItems.find(f => f.itemDate.getTime() >= minAllowed && f.itemDate.getTime() <= maxAllowed) || null;
+          } else {
+            // 前回の記録がない場合は直近の未来データをそのまま採用
+            validFutureItem = futureItems[0];
+          }
+        }
+
+        if (validFutureItem) {
+          // 前回から80〜100分の範囲に合致する登録データが存在する場合：確定/予想時間・場所を表示
+          wrapLoc.style.display = 'block';
+          const fItem = validFutureItem.item;
+          wrapTime.innerHTML = `次の時間：<span id="next-time-${category}">(${fItem.nextDay}) ${fItem.nextTime}</span><span id="badge-time-${category}" class="status-badge ${fItem.type === 'confirmed' ? 'status-confirmed' : 'status-estimated'}">${fItem.type === 'confirmed' ? '確定' : '予想'}</span>`;
+          locSpan.innerText = fItem.nextLoc;
+          locBadge.innerText = fItem.type === 'confirmed' ? '確定' : '予想';
+          locBadge.className = fItem.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
+
+        } else if (latestPastDate) {
+          // 有効な範囲内の登録データが存在せず、前回出現データがある場合：+80分〜+100分の予想範囲を表示
+          wrapLoc.style.display = 'none';
+
+          const minDate = new Date(latestPastDate.getTime() + (80 * 60 * 1000));
+          const maxDate = new Date(latestPastDate.getTime() + (100 * 60 * 1000));
+
+          const minH = String(minDate.getHours()).padStart(2, '0');
+          const minM = String(minDate.getMinutes()).padStart(2, '0');
+          const maxH = String(maxDate.getHours()).padStart(2, '0');
+          const maxM = String(maxDate.getMinutes()).padStart(2, '0');
+
+          const minDay = revDayMap[minDate.getDay()];
+          const maxDay = revDayMap[maxDate.getDay()];
+
+          const rangeStr = (minDay === maxDay)
+            ? `(${minDay}) ${minH}:${minM} ～ ${maxH}:${maxM}`
+            : `(${minDay}) ${minH}:${minM} ～ (${maxDay}) ${maxH}:${maxM}`;
+
+          wrapTime.innerHTML = `次の出現予想：<span>${rangeStr}</span><span class="status-badge status-estimated">予想範囲</span>`;
+
+        } else {
+          // 前回記録も未来の登録もない初期状態
+          wrapLoc.style.display = 'block';
+          wrapTime.innerHTML = `次の時間：<span id="next-time-${category}">--:--</span><span id="badge-time-${category}" class="status-badge"></span>`;
           locSpan.innerText = '--';
-          timeBadge.innerText = '';
-          timeBadge.className = 'status-badge';
           locBadge.innerText = '';
           locBadge.className = 'status-badge';
-        } else {
-          const fItem = futureItems[0].item;
-          timeSpan.innerText = `(${fItem.nextDay}) ${fItem.nextTime}`;
-          locSpan.innerText = fItem.nextLoc;
-
-          const label = fItem.type === 'confirmed' ? '確定' : '予想';
-          const badgeClass = fItem.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
-
-          timeBadge.innerText = label;
-          timeBadge.className = badgeClass;
-          locBadge.innerText = label;
-          locBadge.className = badgeClass;
         }
       }
     }
