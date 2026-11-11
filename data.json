@@ -1,6 +1,14 @@
 {
   "ritual": [],
-  "hakusei": [],
+  "hakusei": [
+    {
+      "id": 1794390741169,
+      "nextDay": "水",
+      "nextTime": "05:35",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    }
+  ],
   "sengen": [
     {
       "id": 1794385987914,
