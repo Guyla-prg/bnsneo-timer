@@ -1,0 +1,770 @@
+{
+  "ritual": [],
+  "hakusei": [
+    {
+      "id": 1793775826516,
+      "nextDay": "水",
+      "nextTime": "14:59",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793772309652,
+      "nextDay": "水",
+      "nextTime": "13:28",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793575977053,
+      "nextDay": "月",
+      "nextTime": "06:57",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793272981640,
+      "nextDay": "木",
+      "nextTime": "18:47",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793190889582,
+      "nextDay": "水",
+      "nextTime": "07:34",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793187318687,
+      "nextDay": "水",
+      "nextTime": "06:55",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    }
+  ],
+  "sengen": [
+    {
+      "id": 1793774047843,
+      "nextDay": "水",
+      "nextTime": "14:34",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793768945332,
+      "nextDay": "水",
+      "nextTime": "13:09",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793726766675,
+      "nextDay": "水",
+      "nextTime": "01:26",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793721606401,
+      "nextDay": "水",
+      "nextTime": "00:00",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793719686803,
+      "nextDay": "火",
+      "nextTime": "23:28",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793714587933,
+      "nextDay": "火",
+      "nextTime": "22:03",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793709307664,
+      "nextDay": "火",
+      "nextTime": "20:35",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793704148182,
+      "nextDay": "火",
+      "nextTime": "19:09",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793698687506,
+      "nextDay": "火",
+      "nextTime": "17:38",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793693286304,
+      "nextDay": "火",
+      "nextTime": "16:08",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793687585174,
+      "nextDay": "火",
+      "nextTime": "14:33",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793682488834,
+      "nextDay": "火",
+      "nextTime": "13:08",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793677148658,
+      "nextDay": "火",
+      "nextTime": "11:39",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793671868470,
+      "nextDay": "火",
+      "nextTime": "10:11",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793666228256,
+      "nextDay": "火",
+      "nextTime": "08:37",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793661128091,
+      "nextDay": "火",
+      "nextTime": "07:12",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793653987605,
+      "nextDay": "火",
+      "nextTime": "05:13",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793649785972,
+      "nextDay": "火",
+      "nextTime": "04:03",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793644387164,
+      "nextDay": "火",
+      "nextTime": "02:33",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793638688801,
+      "nextDay": "火",
+      "nextTime": "00:58",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793634185361,
+      "nextDay": "月",
+      "nextTime": "23:43",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793628846211,
+      "nextDay": "月",
+      "nextTime": "22:14",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793623268538,
+      "nextDay": "月",
+      "nextTime": "20:41",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793617626045,
+      "nextDay": "月",
+      "nextTime": "19:07",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793612227220,
+      "nextDay": "月",
+      "nextTime": "17:37",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793606526354,
+      "nextDay": "月",
+      "nextTime": "16:02",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793600826698,
+      "nextDay": "月",
+      "nextTime": "14:27",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793595365794,
+      "nextDay": "月",
+      "nextTime": "12:56",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793589847305,
+      "nextDay": "月",
+      "nextTime": "11:24",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793584505530,
+      "nextDay": "月",
+      "nextTime": "09:55",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793579165807,
+      "nextDay": "月",
+      "nextTime": "08:26",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793573826301,
+      "nextDay": "月",
+      "nextTime": "06:57",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793568609520,
+      "nextDay": "月",
+      "nextTime": "05:30",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793563208030,
+      "nextDay": "月",
+      "nextTime": "04:00",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793557567390,
+      "nextDay": "月",
+      "nextTime": "02:26",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793552286195,
+      "nextDay": "月",
+      "nextTime": "00:58",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793547005677,
+      "nextDay": "日",
+      "nextTime": "23:30",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793541306979,
+      "nextDay": "日",
+      "nextTime": "21:55",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793535906396,
+      "nextDay": "日",
+      "nextTime": "20:25",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793530808719,
+      "nextDay": "日",
+      "nextTime": "19:00",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793525588561,
+      "nextDay": "日",
+      "nextTime": "17:33",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793520487138,
+      "nextDay": "日",
+      "nextTime": "16:08",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793514907670,
+      "nextDay": "日",
+      "nextTime": "14:35",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793509626895,
+      "nextDay": "日",
+      "nextTime": "13:07",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793504166988,
+      "nextDay": "日",
+      "nextTime": "11:36",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793498585803,
+      "nextDay": "日",
+      "nextTime": "10:03",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793493485753,
+      "nextDay": "日",
+      "nextTime": "08:38",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793487905793,
+      "nextDay": "日",
+      "nextTime": "07:05",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793482506931,
+      "nextDay": "日",
+      "nextTime": "05:35",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793477166021,
+      "nextDay": "日",
+      "nextTime": "04:06",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793471527381,
+      "nextDay": "日",
+      "nextTime": "02:32",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793465828159,
+      "nextDay": "日",
+      "nextTime": "00:57",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793462346130,
+      "nextDay": "土",
+      "nextTime": "23:59",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793456708592,
+      "nextDay": "土",
+      "nextTime": "22:25",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793451605593,
+      "nextDay": "土",
+      "nextTime": "21:00",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793446148054,
+      "nextDay": "土",
+      "nextTime": "19:29",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793440627912,
+      "nextDay": "土",
+      "nextTime": "17:57",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793435287665,
+      "nextDay": "土",
+      "nextTime": "16:28",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793429766048,
+      "nextDay": "土",
+      "nextTime": "14:56",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793424186273,
+      "nextDay": "土",
+      "nextTime": "13:23",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793418916844,
+      "nextDay": "土",
+      "nextTime": "11:55",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793413388632,
+      "nextDay": "土",
+      "nextTime": "10:23",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793408167405,
+      "nextDay": "土",
+      "nextTime": "08:56",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793402827752,
+      "nextDay": "土",
+      "nextTime": "07:27",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793397186924,
+      "nextDay": "土",
+      "nextTime": "05:53",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793391667103,
+      "nextDay": "土",
+      "nextTime": "04:21",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793386386428,
+      "nextDay": "土",
+      "nextTime": "02:53",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793381108382,
+      "nextDay": "土",
+      "nextTime": "01:25",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793376006795,
+      "nextDay": "土",
+      "nextTime": "00:00",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793371267313,
+      "nextDay": "金",
+      "nextTime": "22:41",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793365927547,
+      "nextDay": "金",
+      "nextTime": "21:12",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793360707997,
+      "nextDay": "金",
+      "nextTime": "19:45",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793355368057,
+      "nextDay": "金",
+      "nextTime": "18:16",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793349967094,
+      "nextDay": "金",
+      "nextTime": "16:46",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793344326855,
+      "nextDay": "金",
+      "nextTime": "15:12",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793339165891,
+      "nextDay": "金",
+      "nextTime": "13:46",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793333466796,
+      "nextDay": "金",
+      "nextTime": "12:11",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793327828372,
+      "nextDay": "金",
+      "nextTime": "10:37",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793322426173,
+      "nextDay": "金",
+      "nextTime": "09:07",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793316908313,
+      "nextDay": "金",
+      "nextTime": "07:35",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793311567010,
+      "nextDay": "金",
+      "nextTime": "06:06",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793309113456,
+      "nextDay": "金",
+      "nextTime": "05:25",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793304911103,
+      "nextDay": "金",
+      "nextTime": "04:15",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793300707899,
+      "nextDay": "金",
+      "nextTime": "03:05",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793295005201,
+      "nextDay": "金",
+      "nextTime": "01:30",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793289605731,
+      "nextDay": "金",
+      "nextTime": "00:00",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793285347100,
+      "nextDay": "木",
+      "nextTime": "22:49",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793279707773,
+      "nextDay": "木",
+      "nextTime": "21:15",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793274125574,
+      "nextDay": "木",
+      "nextTime": "19:42",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793268486680,
+      "nextDay": "木",
+      "nextTime": "18:08",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793262965415,
+      "nextDay": "木",
+      "nextTime": "16:36",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793257867038,
+      "nextDay": "木",
+      "nextTime": "15:11",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793252599917,
+      "nextDay": "木",
+      "nextTime": "13:43",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793241635225,
+      "nextDay": "木",
+      "nextTime": "10:36",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793236284925,
+      "nextDay": "木",
+      "nextTime": "09:11",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793225412957,
+      "nextDay": "木",
+      "nextTime": "06:09",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793203504502,
+      "nextDay": "木",
+      "nextTime": "00:05",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793197806735,
+      "nextDay": "水",
+      "nextTime": "22:30",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793192705224,
+      "nextDay": "水",
+      "nextTime": "21:05",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793187126786,
+      "nextDay": "水",
+      "nextTime": "19:32",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793181906607,
+      "nextDay": "水",
+      "nextTime": "18:05",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793176447247,
+      "nextDay": "水",
+      "nextTime": "16:34",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793170923658,
+      "nextDay": "水",
+      "nextTime": "15:01",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    }
+  ]
+}
