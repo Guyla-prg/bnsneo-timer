@@ -502,7 +502,6 @@
         locVal = '不明';
       }
 
-      // 重複チェック
       const isDuplicate = store[category].some(item => 
         item.nextDay === dayVal && 
         item.nextTime === timeVal && 
@@ -679,28 +678,23 @@
           </div>`;
 
       } else {
-        // 白青FB または 仙幻FB の表示処理
         const wrapTime = document.getElementById(`wrap-time-${category}`);
         const wrapLoc = document.getElementById(`wrap-loc-${category}`);
         const locSpan = document.getElementById(`next-loc-${category}`);
         const locBadge = document.getElementById(`badge-loc-${category}`);
 
-        // 【判定ロジック】前回出現時刻から 80分〜100分（1時間20分〜1時間40分）の範囲内にある未来データを探す
         let validFutureItem = null;
         if (futureItems.length > 0) {
           if (latestPastDate) {
             const minAllowed = latestPastDate.getTime() + (80 * 60 * 1000);
             const maxAllowed = latestPastDate.getTime() + (100 * 60 * 1000);
-            // 80分〜100分の周期内に収まっている直近データのみを有効とする
             validFutureItem = futureItems.find(f => f.itemDate.getTime() >= minAllowed && f.itemDate.getTime() <= maxAllowed) || null;
           } else {
-            // 前回の記録がない場合は直近の未来データをそのまま採用
             validFutureItem = futureItems[0];
           }
         }
 
         if (validFutureItem) {
-          // 前回から80〜100分の範囲に合致する登録データが存在する場合：確定/予想時間・場所を表示
           wrapLoc.style.display = 'block';
           const fItem = validFutureItem.item;
           wrapTime.innerHTML = `次の時間：<span id="next-time-${category}">(${fItem.nextDay}) ${fItem.nextTime}</span><span id="badge-time-${category}" class="status-badge ${fItem.type === 'confirmed' ? 'status-confirmed' : 'status-estimated'}">${fItem.type === 'confirmed' ? '確定' : '予想'}</span>`;
@@ -709,7 +703,6 @@
           locBadge.className = fItem.type === 'confirmed' ? 'status-badge status-confirmed' : 'status-badge status-estimated';
 
         } else if (latestPastDate) {
-          // 有効な範囲内の登録データが存在せず、前回出現データがある場合：+80分〜+100分の予想範囲を表示
           wrapLoc.style.display = 'none';
 
           const minDate = new Date(latestPastDate.getTime() + (80 * 60 * 1000));
@@ -730,7 +723,6 @@
           wrapTime.innerHTML = `次の出現予想：<span>${rangeStr}</span><span class="status-badge status-estimated">予想範囲</span>`;
 
         } else {
-          // 前回記録も未来の登録もない初期状態
           wrapLoc.style.display = 'block';
           wrapTime.innerHTML = `次の時間：<span id="next-time-${category}">--:--</span><span id="badge-time-${category}" class="status-badge"></span>`;
           locSpan.innerText = '--';
@@ -864,6 +856,49 @@
             }
           }
         });
+
+        // 【FB予想開始時刻（前回出現 + 80分）のアナウンス】
+        if (cat === 'hakusei' || cat === 'sengen') {
+          const pastItems = [];
+          const futureItems = [];
+
+          list.forEach(item => {
+            const itemDate = getItemDate(item, twDate);
+            if (itemDate) {
+              if (itemDate.getTime() >= twDate.getTime()) {
+                futureItems.push({ item, itemDate });
+              } else {
+                pastItems.push({ item, itemDate });
+              }
+            }
+          });
+
+          pastItems.sort((a, b) => b.itemDate.getTime() - a.itemDate.getTime());
+          
+          if (pastItems.length > 0) {
+            const latestPastDate = pastItems[0].itemDate;
+            const minAllowed = latestPastDate.getTime() + (80 * 60 * 1000);
+            const maxAllowed = latestPastDate.getTime() + (100 * 60 * 1000);
+
+            // 有効な直近未来データが登録されていない場合のみ予想アナウンスを行う
+            const hasValidFuture = futureItems.some(f => f.itemDate.getTime() >= minAllowed && f.itemDate.getTime() <= maxAllowed);
+
+            if (!hasValidFuture) {
+              const diffSec = Math.floor((minAllowed - twDate.getTime()) / 1000);
+
+              // 予想時間（+80分）到達時（-15秒〜15秒）に通知
+              if (diffSec >= -15 && diffSec <= 15) {
+                const key = `${cat}-est-start-${latestPastDate.getTime()}`;
+                if (!alertedSet.has(key)) {
+                  alertedSet.add(key);
+                  const msg = `${categoryNames[cat]}の出現予想の時間です`;
+                  notify(`ブレソNeoタイマー (${categoryNames[cat]}予想)`, msg);
+                  speak(msg);
+                }
+              }
+            }
+          }
+        }
       });
 
       // ワールドボス（WB）通知：10分前 ＆ 5分前
