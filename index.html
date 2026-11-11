@@ -782,6 +782,8 @@
       document.getElementById('tw-clock').innerText = twTimeStr;
 
       const categoryNames = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+      // 読み上げ用の名称マッピング
+      const speakNames = { ritual: '儀式', hakusei: 'はくせいボス', sengen: 'せんげんボス' };
 
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
         updateUI(cat);
@@ -814,11 +816,11 @@
                   speak(speakMsg);
                 } else {
                   let notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
-                  let speakMsg = `${categoryNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
+                  let speakMsg = `${speakNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
 
                   if (isEstimated) {
                     notifyMsg = `${item.nextTime}：${categoryNames[cat]} 不明 に湧く可能性があります`;
-                    speakMsg = `${categoryNames[cat]}の 場所は不明 フィールドボスが湧くかもしれない 5分前です`;
+                    speakMsg = `${speakNames[cat]}の 場所は不明 フィールドボスが湧くかもしれない 5分前です`;
                   }
 
                   notify('ブレソNeoタイマー (FB5分前)', notifyMsg);
@@ -842,11 +844,11 @@
                   speak(speakMsg);
                 } else {
                   let notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
-                  let speakMsg = `${categoryNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
+                  let speakMsg = `${speakNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
 
                   if (isEstimated) {
                     notifyMsg = `${item.nextTime}：${categoryNames[cat]} 不明 に予兆が発生する可能性があります`;
-                    speakMsg = `${categoryNames[cat]}の 場所は不明 フィールドボスの予兆が出るかもしれない時間です`;
+                    speakMsg = `${speakNames[cat]}の 場所は不明 フィールドボスの予兆が出るかもしれない時間です`;
                   }
 
                   notify('ブレソNeoタイマー (FB予兆発生)', notifyMsg);
@@ -891,9 +893,10 @@
                 const key = `${cat}-est-start-${latestPastDate.getTime()}`;
                 if (!alertedSet.has(key)) {
                   alertedSet.add(key);
-                  const msg = `${categoryNames[cat]}の出現予想の時間です`;
-                  notify(`ブレソNeoタイマー (${categoryNames[cat]}予想)`, msg);
-                  speak(msg);
+                  const notifyMsg = `${categoryNames[cat]}の出現予想の時間です`;
+                  const speakMsg = `${speakNames[cat]}の出現予想の時間です`;
+                  notify(`ブレソNeoタイマー (${categoryNames[cat]}予想)`, notifyMsg);
+                  speak(speakMsg);
                 }
               }
             }
