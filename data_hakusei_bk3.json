@@ -1,0 +1,63 @@
+{
+  "ritual": [],
+  "hakusei": [
+    {
+      "id": 1793775826516,
+      "nextDay": "水",
+      "nextTime": "14:59",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793772309652,
+      "nextDay": "水",
+      "nextTime": "13:28",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793575977053,
+      "nextDay": "月",
+      "nextTime": "06:57",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793272981640,
+      "nextDay": "木",
+      "nextTime": "18:47",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793190889582,
+      "nextDay": "水",
+      "nextTime": "07:34",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793187318687,
+      "nextDay": "水",
+      "nextTime": "06:55",
+      "nextLoc": "平原",
+      "type": "confirmed"
+    }
+  ],
+  "sengen": [
+    {
+      "id": 1793775951381,
+      "nextDay": "水",
+      "nextTime": "14:34",
+      "nextLoc": "知性森林",
+      "type": "confirmed"
+    },
+    {
+      "id": 1793775939675,
+      "nextDay": "水",
+      "nextTime": "13:09",
+      "nextLoc": "武神荒野",
+      "type": "confirmed"
+    }
+  ]
+}
