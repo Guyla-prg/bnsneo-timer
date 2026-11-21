@@ -102,6 +102,13 @@
   ],
   "sengen": [
     {
+      "id": 1795255805386,
+      "nextDay": "土",
+      "nextTime": "18:10",
+      "nextLoc": "力王山脈",
+      "type": "confirmed"
+    },
+    {
       "id": 1795250586163,
       "nextDay": "土",
       "nextTime": "16:43",
