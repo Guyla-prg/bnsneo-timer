@@ -14,6 +14,10 @@
     .exe-link a { color: #00ffcc; text-decoration: underline; font-weight: bold; }
     .exe-link a:hover { color: #80ffe5; }
 
+    .footer-link { text-align: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid #333; font-size: 11px; }
+    .footer-link a { color: #00ffcc; text-decoration: underline; font-weight: bold; }
+    .footer-link a:hover { color: #80ffe5; }
+
     .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
     .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 3px; margin-bottom: 6px; }
     .card-title { font-size: 15px; font-weight: bold; color: #ffeb3b; }
@@ -271,6 +275,12 @@
   </div>
 
   <button class="btn-reset" onclick="resetAllData()">すべての登録データを一括クリア</button>
+
+  <div class="footer-link">
+    <a href="https://github.com/Guyla-prg/PurpleTrayCleaner/releases/latest" target="_blank">
+      🧹 Purple / Purple ON 不要なタスクトレイアイコン削除ツール
+    </a>
+  </div>
 
   <!-- リスト表示用モーダル画面 -->
   <div id="modalOverlay" class="modal-overlay">
@@ -782,7 +792,6 @@
       document.getElementById('tw-clock').innerText = twTimeStr;
 
       const categoryNames = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
-      // 読み上げ用の名称マッピング
       const speakNames = { ritual: '儀式', hakusei: 'はくせいボス', sengen: 'せんげんボス' };
 
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
@@ -882,13 +891,11 @@
             const minAllowed = latestPastDate.getTime() + (80 * 60 * 1000);
             const maxAllowed = latestPastDate.getTime() + (100 * 60 * 1000);
 
-            // 有効な直近未来データが登録されていない場合のみ予想アナウンスを行う
             const hasValidFuture = futureItems.some(f => f.itemDate.getTime() >= minAllowed && f.itemDate.getTime() <= maxAllowed);
 
             if (!hasValidFuture) {
               const diffSec = Math.floor((minAllowed - twDate.getTime()) / 1000);
 
-              // 予想時間（+80分）到達時（-15秒〜15秒）に通知
               if (diffSec >= -15 && diffSec <= 15) {
                 const key = `${cat}-est-start-${latestPastDate.getTime()}`;
                 if (!alertedSet.has(key)) {
