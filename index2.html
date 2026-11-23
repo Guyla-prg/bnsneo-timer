@@ -14,6 +14,10 @@
     .exe-link a { color: #00ffcc; text-decoration: underline; font-weight: bold; }
     .exe-link a:hover { color: #80ffe5; }
 
+    .footer-link { text-align: center; margin-top: 10px; padding-top: 8px; border-top: 1px solid #333; font-size: 11px; }
+    .footer-link a { color: #00ffcc; text-decoration: underline; font-weight: bold; }
+    .footer-link a:hover { color: #80ffe5; }
+
     .card { background: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }
     .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; padding-bottom: 3px; margin-bottom: 6px; }
     .card-title { font-size: 15px; font-weight: bold; color: #ffeb3b; }
@@ -271,6 +275,12 @@
   </div>
 
   <button class="btn-reset" onclick="resetAllData()">すべての登録データを一括クリア</button>
+
+  <div class="footer-link">
+    <a href="https://github.com/Guyla-prg/PurpleTrayCleaner/releases/latest" target="_blank">
+      🧹 Purple / Purple ON 不要なタスクトレイアイコン削除ツール
+    </a>
+  </div>
 
   <!-- リスト表示用モーダル画面 -->
   <div id="modalOverlay" class="modal-overlay">
@@ -782,6 +792,7 @@
       document.getElementById('tw-clock').innerText = twTimeStr;
 
       const categoryNames = { ritual: '儀式', hakusei: '白青FB', sengen: '仙幻FB' };
+      const speakNames = { ritual: '儀式', hakusei: 'はくせいボス', sengen: 'せんげんボス' };
 
       ['ritual', 'hakusei', 'sengen'].forEach(cat => {
         updateUI(cat);
@@ -814,11 +825,11 @@
                   speak(speakMsg);
                 } else {
                   let notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
-                  let speakMsg = `${categoryNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
+                  let speakMsg = `${speakNames[cat]} ${item.nextLoc} フィールドボスの5分前です`;
 
                   if (isEstimated) {
                     notifyMsg = `${item.nextTime}：${categoryNames[cat]} 不明 に湧く可能性があります`;
-                    speakMsg = `${categoryNames[cat]}の 場所は不明 フィールドボスが湧くかもしれない 5分前です`;
+                    speakMsg = `${speakNames[cat]}の 場所は不明 フィールドボスが湧くかもしれない 5分前です`;
                   }
 
                   notify('ブレソNeoタイマー (FB5分前)', notifyMsg);
@@ -842,11 +853,11 @@
                   speak(speakMsg);
                 } else {
                   let notifyMsg = `${item.nextTime}：${categoryNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
-                  let speakMsg = `${categoryNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
+                  let speakMsg = `${speakNames[cat]} ${item.nextLoc} フィールドボスの予兆が発生する時間です`;
 
                   if (isEstimated) {
                     notifyMsg = `${item.nextTime}：${categoryNames[cat]} 不明 に予兆が発生する可能性があります`;
-                    speakMsg = `${categoryNames[cat]}の 場所は不明 フィールドボスの予兆が出るかもしれない時間です`;
+                    speakMsg = `${speakNames[cat]}の 場所は不明 フィールドボスの予兆が出るかもしれない時間です`;
                   }
 
                   notify('ブレソNeoタイマー (FB予兆発生)', notifyMsg);
@@ -880,20 +891,19 @@
             const minAllowed = latestPastDate.getTime() + (80 * 60 * 1000);
             const maxAllowed = latestPastDate.getTime() + (100 * 60 * 1000);
 
-            // 有効な直近未来データが登録されていない場合のみ予想アナウンスを行う
             const hasValidFuture = futureItems.some(f => f.itemDate.getTime() >= minAllowed && f.itemDate.getTime() <= maxAllowed);
 
             if (!hasValidFuture) {
               const diffSec = Math.floor((minAllowed - twDate.getTime()) / 1000);
 
-              // 予想時間（+80分）到達時（-15秒〜15秒）に通知
               if (diffSec >= -15 && diffSec <= 15) {
                 const key = `${cat}-est-start-${latestPastDate.getTime()}`;
                 if (!alertedSet.has(key)) {
                   alertedSet.add(key);
-                  const msg = `${categoryNames[cat]}の出現予想の時間です`;
-                  notify(`ブレソNeoタイマー (${categoryNames[cat]}予想)`, msg);
-                  speak(msg);
+                  const notifyMsg = `${categoryNames[cat]}の出現予想の時間です`;
+                  const speakMsg = `${speakNames[cat]}の出現予想の時間です`;
+                  notify(`ブレソNeoタイマー (${categoryNames[cat]}予想)`, notifyMsg);
+                  speak(speakMsg);
                 }
               }
             }
