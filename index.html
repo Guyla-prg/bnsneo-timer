@@ -344,6 +344,23 @@
     </div>
   </div>
 
+  <!-- お知らせ編集・削除時のパスワード認証用モーダル画面（Electron対応） -->
+  <div id="noticeAuthModalOverlay" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div id="noticeAuthModalTitle" class="modal-title">パスワード認証</div>
+        <button class="modal-close" onclick="closeNoticeAuthModal()">閉じる</button>
+      </div>
+      <div class="modal-form-field">
+        <label id="noticeAuthPromptLabel">パスワードを入力してください</label>
+        <input type="password" id="notice-auth-pass" placeholder="登録時のパスワード">
+      </div>
+      <div class="btn-row">
+        <button class="btn-reg" id="noticeAuthSubmitBtn" onclick="submitNoticeAuth()">確認</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const GITHUB_CONFIG = {
       owner: 'Guyla-prg',
@@ -365,6 +382,7 @@
     let isSyncing = false;
     let currentModalCategory = null;
     let editingNoticeId = null;
+    let pendingAuthAction = null; // { type: 'edit' | 'delete', id: number }
     const alertedSet = new Set();
 
     function getSyncToken() {
@@ -622,7 +640,6 @@
       }
 
       if (editingNoticeId) {
-        // 既存データの編集更新
         const idx = store.notices.findIndex(n => n.id === editingNoticeId);
         if (idx !== -1) {
           store.notices[idx].title = titleVal;
@@ -630,7 +647,6 @@
           store.notices[idx].password = passVal;
         }
       } else {
-        // 新規登録（登録日付を生成）
         const now = new Date();
         const dateStr = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
         const newNotice = {
@@ -643,7 +659,6 @@
         store.notices.unshift(newNotice);
       }
 
-      // 日付（登録順）降順ソート＆最新3件のみ保持（古いものは削除）
       store.notices.sort((a, b) => b.id - a.id);
       if (store.notices.length > 3) {
         store.notices = store.notices.slice(0, 3);
@@ -655,34 +670,64 @@
       syncToGitHub();
     }
 
-    function requestEditNotice(id) {
+    function openNoticeAuthModal(type, id) {
       const item = (store.notices || []).find(n => n.id === id);
       if (!item) return;
 
-      const inputPass = prompt("このお知らせを編集するためのパスワードを入力してください：");
-      if (inputPass === null) return;
+      pendingAuthAction = { type, id };
+      const isEdit = (type === 'edit');
+      document.getElementById('noticeAuthModalTitle').innerText = isEdit ? '編集用パスワード確認' : '削除用パスワード確認';
+      document.getElementById('noticeAuthPromptLabel').innerText = isEdit
+        ? 'このお知らせを編集するためのパスワードを入力してください：'
+        : 'このお知らせを削除するためのパスワードを入力してください：';
+      const submitBtn = document.getElementById('noticeAuthSubmitBtn');
+      submitBtn.innerText = isEdit ? '編集画面へ' : '削除する';
+      submitBtn.className = isEdit ? 'btn-reg' : 'btn-cat-clear';
+
+      const passInput = document.getElementById('notice-auth-pass');
+      passInput.value = '';
+      document.getElementById('noticeAuthModalOverlay').style.display = 'flex';
+      setTimeout(() => passInput.focus(), 50);
+    }
+
+    function closeNoticeAuthModal() {
+      document.getElementById('noticeAuthModalOverlay').style.display = 'none';
+      pendingAuthAction = null;
+    }
+
+    function submitNoticeAuth() {
+      if (!pendingAuthAction) return;
+      const { type, id } = pendingAuthAction;
+      const item = (store.notices || []).find(n => n.id === id);
+      if (!item) {
+        closeNoticeAuthModal();
+        return;
+      }
+
+      const inputPass = document.getElementById('notice-auth-pass').value;
       if (inputPass !== item.password) {
         alert("パスワードが一致しません");
         return;
       }
-      openNoticeModal(item);
+
+      closeNoticeAuthModal();
+
+      if (type === 'edit') {
+        openNoticeModal(item);
+      } else if (type === 'delete') {
+        store.notices = store.notices.filter(n => n.id !== id);
+        localStorage.setItem('list_notices', JSON.stringify(store.notices));
+        renderNotices();
+        syncToGitHub();
+      }
+    }
+
+    function requestEditNotice(id) {
+      openNoticeAuthModal('edit', id);
     }
 
     function requestDeleteNotice(id) {
-      const item = (store.notices || []).find(n => n.id === id);
-      if (!item) return;
-
-      const inputPass = prompt("このお知らせを削除するためのパスワードを入力してください：");
-      if (inputPass === null) return;
-      if (inputPass !== item.password) {
-        alert("パスワードが一致しません");
-        return;
-      }
-
-      store.notices = store.notices.filter(n => n.id !== id);
-      localStorage.setItem('list_notices', JSON.stringify(store.notices));
-      renderNotices();
-      syncToGitHub();
+      openNoticeAuthModal('delete', id);
     }
 
     function renderNotices() {
@@ -1013,6 +1058,13 @@
     window.addEventListener('DOMContentLoaded', () => {
       fetchGitHubData();
       setInterval(fetchGitHubData, 15000);
+
+      // Enterキーでもパスワード認証送信できるようにする
+      document.getElementById('notice-auth-pass').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          submitNoticeAuth();
+        }
+      });
     });
 
     setInterval(() => {
