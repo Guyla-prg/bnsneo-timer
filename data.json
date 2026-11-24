@@ -944,6 +944,13 @@
   ],
   "notices": [
     {
+      "id": 1795531710304,
+      "date": "2026/11/24",
+      "title": "FBなどのイベントの報酬",
+      "url": "https://tw.ncsoft.com/event/bns/neo/261104_flashstep/event.aspx",
+      "password": "1111"
+    },
+    {
       "id": 1795531616558,
       "date": "2026/11/24",
       "title": "いいねぇ！",
@@ -955,13 +962,6 @@
       "date": "2026/11/24",
       "title": "URLチェッカー作りました！",
       "url": "https://cobaltcraft.booth.pm/items/9213798",
-      "password": "1111"
-    },
-    {
-      "id": 1795531187487,
-      "date": "2026/11/24",
-      "title": "タヌキイベントやってるよ！",
-      "url": "https://tw.ncsoft.com/bns/news/notice/view/3462",
       "password": "1111"
     }
   ]
