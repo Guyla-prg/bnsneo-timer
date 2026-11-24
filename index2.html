@@ -38,16 +38,29 @@
     .field-unit { display: flex; flex-direction: column; }
     
     label { font-size: 10px; color: #aaa; margin-bottom: 1px; }
-    select, input[type="time"] { width: 100%; padding: 4px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; font-size: 12px; height: 28px; }
+    select, input[type="time"], input[type="text"], input[type="password"] { width: 100%; padding: 4px; border-radius: 4px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; font-size: 12px; height: 28px; }
     
     .btn-row { display: flex; gap: 6px; margin-top: 6px; }
     .btn-row button { margin: 0; flex: 1; font-weight: bold; cursor: pointer; border: none; border-radius: 4px; height: 28px; font-size: 12px; }
     .btn-reg { background: #0288d1; color: #fff; }
     .btn-cat-clear { background: #d32f2f; color: #fff; }
-    .btn-reset { background: #b71c1c !important; color: #fff; margin-top: 8px; height: 32px; font-size: 13px; font-weight: bold; width: 100%; border-radius: 4px; border: none; cursor: pointer; }
+    .btn-reset { background: #b71c1c !important; color: #fff; margin-top: 4px; margin-bottom: 8px; height: 32px; font-size: 13px; font-weight: bold; width: 100%; border-radius: 4px; border: none; cursor: pointer; }
     
     .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 8px; background: #222; padding: 6px; border-radius: 6px; }
     .checkbox-container input { width: auto; height: auto; margin: 0; }
+
+    /* お知らせエリア専用スタイル */
+    .notice-item { background: #262626; border: 1px solid #383838; border-radius: 5px; padding: 5px 8px; margin-bottom: 5px; }
+    .notice-item:last-child { margin-bottom: 0; }
+    .notice-row1 { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .notice-title-wrap { font-size: 12px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    .notice-date { color: #00ffcc; font-weight: bold; margin-right: 4px; font-size: 11px; }
+    .notice-btns { display: flex; gap: 4px; flex-shrink: 0; }
+    .btn-notice-edit { background: #455a64; color: #fff; border: none; border-radius: 3px; padding: 1px 6px; font-size: 10px; cursor: pointer; height: 20px; }
+    .btn-notice-del { background: #c62828; color: #fff; border: none; border-radius: 3px; padding: 1px 6px; font-size: 10px; cursor: pointer; height: 20px; }
+    .notice-row2 { font-size: 11px; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #90caf9; }
+    .notice-row2 a { color: #64b5f6; text-decoration: underline; }
+    .notice-row2 a:hover { color: #bbdefb; }
 
     /* モーダル表示スタイリング */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 1000; }
@@ -77,6 +90,8 @@
     .modal-list-item .item-info { display: flex; gap: 8px; align-items: center; }
     .btn-delete-single { background: #d32f2f; color: #fff; border: none; border-radius: 3px; padding: 2px 8px; font-size: 11px; cursor: pointer; width: auto; height: 24px; }
     .no-data { text-align: center; color: #888; font-size: 12px; padding: 10px 0; }
+    .modal-form-field { margin-bottom: 8px; }
+    .modal-form-field label { display: block; font-size: 11px; color: #ccc; margin-bottom: 3px; }
   </style>
 </head>
 <body>
@@ -276,6 +291,17 @@
 
   <button class="btn-reset" onclick="resetAllData()">すべての登録データを一括クリア</button>
 
+  <!-- お知らせエリア（最新3件固定表示） -->
+  <div class="card" id="card-notices">
+    <div class="card-header">
+      <div class="card-title">お知らせ（最新3件）</div>
+      <button class="btn-list-open" onclick="openNoticeModal()">＋追加</button>
+    </div>
+    <div id="noticeListContainer">
+      <div class="no-data">お知らせはありません</div>
+    </div>
+  </div>
+
   <div class="footer-link">
     <a href="https://github.com/Guyla-prg/PurpleTrayCleaner/releases/latest" target="_blank">
       🧹 Purple / Purple ON 不要なタスクトレイアイコン削除ツール
@@ -293,6 +319,31 @@
     </div>
   </div>
 
+  <!-- お知らせ登録・編集用モーダル画面 -->
+  <div id="noticeModalOverlay" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div id="noticeModalTitle" class="modal-title">お知らせの追加</div>
+        <button class="modal-close" onclick="closeNoticeModal()">閉じる</button>
+      </div>
+      <div class="modal-form-field">
+        <label>お知らせタイトル（必須）</label>
+        <input type="text" id="notice-input-title" placeholder="例: アプデ情報 / イベント開催など" maxlength="60">
+      </div>
+      <div class="modal-form-field">
+        <label>参考URL（httpから、または ://以降だけでも可）</label>
+        <input type="text" id="notice-input-url" placeholder="例: https://example.com または ://example.com">
+      </div>
+      <div class="modal-form-field">
+        <label>編集・削除用パスワード（必須）</label>
+        <input type="password" id="notice-input-pass" placeholder="編集・削除時に必要なパスワード">
+      </div>
+      <div class="btn-row">
+        <button class="btn-reg" onclick="saveNotice()">登録</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const GITHUB_CONFIG = {
       owner: 'Guyla-prg',
@@ -307,11 +358,13 @@
     let store = {
       ritual: [],
       hakusei: [],
-      sengen: []
+      sengen: [],
+      notices: []
     };
 
     let isSyncing = false;
     let currentModalCategory = null;
+    let editingNoticeId = null;
     const alertedSet = new Set();
 
     function getSyncToken() {
@@ -496,6 +549,178 @@
         }, 5000);
       }
     }
+
+    // --- お知らせ機能ロジック ---
+    function normalizeNoticeUrl(rawUrl) {
+      if (!rawUrl) return '';
+      let trimmed = rawUrl.trim();
+      if (!trimmed) return '';
+      if (/^https?:\/\//i.test(trimmed)) {
+        return trimmed;
+      }
+      if (trimmed.startsWith('://')) {
+        return 'https' + trimmed;
+      }
+      if (trimmed.startsWith('//')) {
+        return 'https:' + trimmed;
+      }
+      return 'https://' + trimmed;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>"']/g, function(m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[m];
+      });
+    }
+
+    function openNoticeModal(editItem = null) {
+      if (editItem) {
+        editingNoticeId = editItem.id;
+        document.getElementById('noticeModalTitle').innerText = 'お知らせの編集';
+        document.getElementById('notice-input-title').value = editItem.title || '';
+        document.getElementById('notice-input-url').value = editItem.url || '';
+        document.getElementById('notice-input-pass').value = editItem.password || '';
+      } else {
+        editingNoticeId = null;
+        document.getElementById('noticeModalTitle').innerText = 'お知らせの追加';
+        document.getElementById('notice-input-title').value = '';
+        document.getElementById('notice-input-url').value = '';
+        document.getElementById('notice-input-pass').value = '';
+      }
+      document.getElementById('noticeModalOverlay').style.display = 'flex';
+    }
+
+    function closeNoticeModal() {
+      document.getElementById('noticeModalOverlay').style.display = 'none';
+      editingNoticeId = null;
+    }
+
+    function saveNotice() {
+      const titleVal = document.getElementById('notice-input-title').value.trim();
+      const rawUrlVal = document.getElementById('notice-input-url').value.trim();
+      const passVal = document.getElementById('notice-input-pass').value.trim();
+
+      if (!titleVal) {
+        alert("お知らせタイトルを入力してください");
+        return;
+      }
+      if (!passVal) {
+        alert("編集・削除用パスワードを入力してください");
+        return;
+      }
+
+      const normalizedUrl = normalizeNoticeUrl(rawUrlVal);
+      if (!Array.isArray(store.notices)) {
+        store.notices = [];
+      }
+
+      if (editingNoticeId) {
+        // 既存データの編集更新
+        const idx = store.notices.findIndex(n => n.id === editingNoticeId);
+        if (idx !== -1) {
+          store.notices[idx].title = titleVal;
+          store.notices[idx].url = normalizedUrl;
+          store.notices[idx].password = passVal;
+        }
+      } else {
+        // 新規登録（登録日付を生成）
+        const now = new Date();
+        const dateStr = `${now.getFullYear()}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getDate()).padStart(2, '0')}`;
+        const newNotice = {
+          id: Date.now(),
+          date: dateStr,
+          title: titleVal,
+          url: normalizedUrl,
+          password: passVal
+        };
+        store.notices.unshift(newNotice);
+      }
+
+      // 日付（登録順）降順ソート＆最新3件のみ保持（古いものは削除）
+      store.notices.sort((a, b) => b.id - a.id);
+      if (store.notices.length > 3) {
+        store.notices = store.notices.slice(0, 3);
+      }
+
+      localStorage.setItem('list_notices', JSON.stringify(store.notices));
+      renderNotices();
+      closeNoticeModal();
+      syncToGitHub();
+    }
+
+    function requestEditNotice(id) {
+      const item = (store.notices || []).find(n => n.id === id);
+      if (!item) return;
+
+      const inputPass = prompt("このお知らせを編集するためのパスワードを入力してください：");
+      if (inputPass === null) return;
+      if (inputPass !== item.password) {
+        alert("パスワードが一致しません");
+        return;
+      }
+      openNoticeModal(item);
+    }
+
+    function requestDeleteNotice(id) {
+      const item = (store.notices || []).find(n => n.id === id);
+      if (!item) return;
+
+      const inputPass = prompt("このお知らせを削除するためのパスワードを入力してください：");
+      if (inputPass === null) return;
+      if (inputPass !== item.password) {
+        alert("パスワードが一致しません");
+        return;
+      }
+
+      store.notices = store.notices.filter(n => n.id !== id);
+      localStorage.setItem('list_notices', JSON.stringify(store.notices));
+      renderNotices();
+      syncToGitHub();
+    }
+
+    function renderNotices() {
+      const container = document.getElementById('noticeListContainer');
+      const list = (store.notices || []).slice(0, 3);
+
+      if (list.length === 0) {
+        container.innerHTML = '<div class="no-data">お知らせはありません</div>';
+        return;
+      }
+
+      let html = '';
+      list.forEach(item => {
+        const safeDate = escapeHtml(item.date || '');
+        const safeTitle = escapeHtml(item.title || '');
+        const safeUrl = escapeHtml(item.url || '');
+        const urlHtml = safeUrl
+          ? `<a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeUrl}</a>`
+          : `<span style="color:#777;">（参考URLなし）</span>`;
+
+        html += `
+          <div class="notice-item">
+            <div class="notice-row1">
+              <div class="notice-title-wrap" title="${safeTitle}">
+                <span class="notice-date">[${safeDate}]</span>${safeTitle}
+              </div>
+              <div class="notice-btns">
+                <button class="btn-notice-edit" onclick="requestEditNotice(${item.id})">編集</button>
+                <button class="btn-notice-del" onclick="requestDeleteNotice(${item.id})">削除</button>
+              </div>
+            </div>
+            <div class="notice-row2">${urlHtml}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+    // --- お知らせ機能ロジックここまで ---
 
     function registerData(category) {
       const dayVal = document.getElementById(`input-day-${category}`).value;
@@ -772,6 +997,12 @@
               }
               updateUI(cat);
             });
+
+            if (parsedData.notices && Array.isArray(parsedData.notices)) {
+              store.notices = parsedData.notices.slice(0, 3);
+              localStorage.setItem('list_notices', JSON.stringify(store.notices));
+            }
+            renderNotices();
           }
         }
       } catch (err) {
