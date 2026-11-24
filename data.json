@@ -934,5 +934,14 @@
       "nextLoc": "武神荒野",
       "type": "confirmed"
     }
+  ],
+  "notices": [
+    {
+      "id": 1795531187487,
+      "date": "2026/11/24",
+      "title": "タヌキイベントやってるよ！",
+      "url": "https://tw.ncsoft.com/bns/news/notice/view/3462",
+      "password": "1111"
+    }
   ]
 }
