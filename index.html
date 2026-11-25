@@ -53,7 +53,8 @@
     .notice-item { background: #262626; border: 1px solid #383838; border-radius: 5px; padding: 5px 8px; margin-bottom: 5px; }
     .notice-item:last-child { margin-bottom: 0; }
     .notice-row1 { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
-    .notice-title-wrap { font-size: 12px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
+    .notice-title-wrap { font-size: 12px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; cursor: pointer; }
+    .notice-title-wrap:hover { color: #00ffcc; text-decoration: underline; }
     .notice-date { color: #00ffcc; font-weight: bold; margin-right: 4px; font-size: 11px; }
     .notice-btns { display: flex; gap: 4px; flex-shrink: 0; }
     .btn-notice-edit { background: #455a64; color: #fff; border: none; border-radius: 3px; padding: 1px 6px; font-size: 10px; cursor: pointer; height: 20px; }
@@ -92,11 +93,19 @@
     .no-data { text-align: center; color: #888; font-size: 12px; padding: 10px 0; }
     .modal-form-field { margin-bottom: 8px; }
     .modal-form-field label { display: block; font-size: 11px; color: #ccc; margin-bottom: 3px; }
+
+    /* お知らせ詳細モーダル内テキスト */
+    .notice-detail-body { overflow-y: auto; max-height: 60vh; font-size: 13px; line-height: 1.5; }
+    .notice-detail-date { font-size: 11px; color: #00ffcc; font-weight: bold; margin-bottom: 4px; }
+    .notice-detail-text { background: #262626; border: 1px solid #383838; border-radius: 5px; padding: 8px 10px; white-space: pre-wrap; word-break: break-all; color: #fff; margin-bottom: 8px; }
+    .notice-detail-link-box { background: #262626; border: 1px solid #383838; border-radius: 5px; padding: 6px 10px; font-size: 12px; word-break: break-all; }
+    .notice-detail-link-box a { color: #64b5f6; text-decoration: underline; }
+    .notice-detail-link-box a:hover { color: #bbdefb; }
   </style>
 </head>
 <body>
 
-  <h1>ブレソNeoタイマー(Ver.1.1.0)</h1>
+  <h1>ブレソNeoタイマー</h1>
   
   <div class="exe-link">
     <a href="https://github.com/Guyla-prg/bnsneo-timer/releases/latest" target="_blank">
@@ -319,6 +328,24 @@
     </div>
   </div>
 
+  <!-- お知らせ全文・リンク詳細表示用モーダル画面 -->
+  <div id="noticeDetailModalOverlay" class="modal-overlay" onclick="if(event.target===this) closeNoticeDetailModal()">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">お知らせ詳細</div>
+        <button class="modal-close" onclick="closeNoticeDetailModal()">閉じる</button>
+      </div>
+      <div class="notice-detail-body">
+        <div id="noticeDetailDate" class="notice-detail-date"></div>
+        <div id="noticeDetailText" class="notice-detail-text"></div>
+        <div id="noticeDetailLinkWrap" class="notice-detail-link-box" style="display:none;">
+          <div style="font-size:10px; color:#aaa; margin-bottom:2px;">参考リンク：</div>
+          <a id="noticeDetailLink" href="#" target="_blank" rel="noopener noreferrer"></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- お知らせ登録・編集用モーダル画面 -->
   <div id="noticeModalOverlay" class="modal-overlay">
     <div class="modal-content">
@@ -328,7 +355,7 @@
       </div>
       <div class="modal-form-field">
         <label>お知らせタイトル（必須）</label>
-        <input type="text" id="notice-input-title" placeholder="例: アプデ情報 / イベント開催など" maxlength="60">
+        <input type="text" id="notice-input-title" placeholder="例: アプデ情報 / イベント開催など" maxlength="100">
       </div>
       <div class="modal-form-field">
         <label>参考URL（httpから、または ://以降だけでも可）</label>
@@ -382,7 +409,7 @@
     let isSyncing = false;
     let currentModalCategory = null;
     let editingNoticeId = null;
-    let pendingAuthAction = null; // { type: 'edit' | 'delete', id: number }
+    let pendingAuthAction = null;
     const alertedSet = new Set();
 
     function getSyncToken() {
@@ -598,6 +625,32 @@
       });
     }
 
+    function openNoticeDetailModal(id) {
+      const item = (store.notices || []).find(n => n.id === id);
+      if (!item) return;
+
+      document.getElementById('noticeDetailDate').innerText = `投稿日：${item.date || ''}`;
+      document.getElementById('noticeDetailText').innerText = item.title || '';
+
+      const linkWrap = document.getElementById('noticeDetailLinkWrap');
+      const linkEl = document.getElementById('noticeDetailLink');
+      if (item.url && item.url.trim() !== '') {
+        linkEl.href = item.url;
+        linkEl.innerText = item.url;
+        linkWrap.style.display = 'block';
+      } else {
+        linkEl.href = '#';
+        linkEl.innerText = '';
+        linkWrap.style.display = 'none';
+      }
+
+      document.getElementById('noticeDetailModalOverlay').style.display = 'flex';
+    }
+
+    function closeNoticeDetailModal() {
+      document.getElementById('noticeDetailModalOverlay').style.display = 'none';
+    }
+
     function openNoticeModal(editItem = null) {
       if (editItem) {
         editingNoticeId = editItem.id;
@@ -751,7 +804,7 @@
         html += `
           <div class="notice-item">
             <div class="notice-row1">
-              <div class="notice-title-wrap" title="${safeTitle}">
+              <div class="notice-title-wrap" onclick="openNoticeDetailModal(${item.id})" title="クリックで全文表示">
                 <span class="notice-date">[${safeDate}]</span>${safeTitle}
               </div>
               <div class="notice-btns">
@@ -1059,7 +1112,6 @@
       fetchGitHubData();
       setInterval(fetchGitHubData, 15000);
 
-      // Enterキーでもパスワード認証送信できるようにする
       document.getElementById('notice-auth-pass').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           submitNoticeAuth();
@@ -1093,7 +1145,6 @@
             const targetTwDate = new Date(twDate.getFullYear(), twDate.getMonth(), twDate.getDate(), twH, twM, 0);
             const diffSec = Math.floor((targetTwDate.getTime() - twDate.getTime()) / 1000);
 
-            // 【5分前通知】（285秒〜315秒：5分前±15秒）
             if (diffSec >= 285 && diffSec <= 315) {
               const key = `${cat}-5m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
               if (!alertedSet.has(key)) {
@@ -1121,7 +1172,6 @@
               }
             }
 
-            // 【ジャスト（0分前／予兆時刻）通知】（-15秒〜15秒）
             if (diffSec >= -15 && diffSec <= 15) {
               const key = `${cat}-0m-${item.nextDay}-${item.nextTime}-${item.nextLoc}`;
               if (!alertedSet.has(key)) {
@@ -1151,7 +1201,6 @@
           }
         });
 
-        // 【FB予想開始時刻（前回出現 + 80分）のアナウンス】
         if (cat === 'hakusei' || cat === 'sengen') {
           const pastItems = [];
           const futureItems = [];
@@ -1194,7 +1243,6 @@
         }
       });
 
-      // ワールドボス（WB）通知：10分前 ＆ 5分前
       if (document.getElementById('wbNotice').checked) {
         const isWeekend = (twDate.getDay() === 0 || twDate.getDay() === 6);
         const twWbHours = isWeekend ? [15, 21] : [21];
